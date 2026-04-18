@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "materials": [
+    {
+      "name": "steel_a36",
+      "display_name": "Steel A36",
+      "category": "metal",
+      "density_kg_m3": 7850,
+      "young_modulus_gpa": 200,
+      "yield_strength_mpa": 250,
+      "ultimate_tensile_strength_mpa": 400,
+      "thermal_conductivity_w_m_k": 51,
+      "max_service_temperature_c": 400,
+      "relative_cost_index": 1.0,
+      "sustainability_score": 0.5
+    },
+    {
+      "name": "aluminum_6061",
+      "display_name": "Aluminum 6061-T6",
+      "category": "metal",
+      "density_kg_m3": 2700,
+      "young_modulus_gpa": 69,
+      "yield_strength_mpa": 276,
+      "ultimate_tensile_strength_mpa": 310,
+      "thermal_conductivity_w_m_k": 167,
+      "max_service_temperature_c": 200,
+      "relative_cost_index": 2.5,
+      "sustainability_score": 0.7
+    },
+    {
+      "name": "stainless_304",
+      "display_name": "Stainless Steel 304",
+      "category": "metal",
+      "density_kg_m3": 8000,
+      "young_modulus_gpa": 193,
+      "yield_strength_mpa": 215,
+      "ultimate_tensile_strength_mpa": 505,
+      "thermal_conductivity_w_m_k": 16,
+      "max_service_temperature_c": 800,
+      "relative_cost_index": 3.0,
+      "sustainability_score": 0.4
+    },
+    {
+      "name": "titanium_grade2",
+      "display_name": "Titanium Grade 2",
+      "category": "metal",
+      "density_kg_m3": 4500,
+      "young_modulus_gpa": 103,
+      "yield_strength_mpa": 275,
+      "ultimate_tensile_strength_mpa": 345,
+      "thermal_conductivity_w_m_k": 17,
+      "max_service_temperature_c": 550,
+      "relative_cost_index": 20.0,
+      "sustainability_score": 0.3
+    },
+    {
+      "name": "abs",
+      "display_name": "ABS Plastic",
+      "category": "polymer",
+      "density_kg_m3": 1040,
+      "young_modulus_gpa": 2.3,
+      "yield_strength_mpa": 40,
+      "ultimate_tensile_strength_mpa": 40,
+      "thermal_conductivity_w_m_k": 0.17,
+      "max_service_temperature_c": 80,
+      "relative_cost_index": 0.5,
+      "sustainability_score": 0.2
+    },
+    {
+      "name": "pla_biodegradable",
+      "display_name": "PLA (biodegradable)",
+      "category": "polymer",
+      "density_kg_m3": 1250,
+      "young_modulus_gpa": 3.5,
+      "yield_strength_mpa": 60,
+      "ultimate_tensile_strength_mpa": 65,
+      "thermal_conductivity_w_m_k": 0.13,
+      "max_service_temperature_c": 60,
+      "relative_cost_index": 1.0,
+      "sustainability_score": 0.95
+    },
+    {
+      "name": "bamboo_laminated",
+      "display_name": "Laminated Bamboo",
+      "category": "composite",
+      "density_kg_m3": 700,
+      "young_modulus_gpa": 12,
+      "yield_strength_mpa": 50,
+      "ultimate_tensile_strength_mpa": 140,
+      "thermal_conductivity_w_m_k": 0.17,
+      "max_service_temperature_c": 120,
+      "relative_cost_index": 0.8,
+      "sustainability_score": 0.98
+    }
+  ]
+}
