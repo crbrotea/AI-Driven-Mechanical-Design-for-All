@@ -56,3 +56,10 @@ _geometry_pipeline = GeometryPipeline(
 app.state.geometry_pipeline = _geometry_pipeline
 app.state.geometry_cache = _geometry_cache
 app.include_router(geometry_router)
+
+from services.interpreter.agent.circuit_breaker import DegradedModeBreaker  # noqa: E402
+
+app.state.geometry_cache_breaker = DegradedModeBreaker(
+    failure_threshold=settings.degraded_mode_failure_threshold,
+    duration_seconds=settings.degraded_mode_duration_seconds,
+)
