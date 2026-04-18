@@ -26,6 +26,7 @@ dev = [
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+addopts = "-m 'not vertex'"
 markers = [
     "vertex: tests that call the real Vertex AI API (slow, costs quota)",
     "integration: integration tests requiring GCP credentials",
