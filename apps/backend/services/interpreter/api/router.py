@@ -42,6 +42,24 @@ async def interpret(req: InterpretRequest, request: Request) -> StreamingRespons
     language = _detect_language(req.prompt)
 
     async def event_stream() -> AsyncIterator[bytes]:
+        # Degraded mode check
+        breaker = request.app.state.breaker
+        if breaker.is_open():
+            yield serialize_sse(
+                SSEEvent(
+                    event="error",
+                    data={
+                        "code": "vertex_ai_rate_limit",
+                        "message": (
+                            "AI assistant temporarily unavailable. "
+                            "Please use manual mode or retry in 60 seconds."
+                        ),
+                        "retry_after": 60,
+                    },
+                )
+            ).encode("utf-8")
+            return
+
         try:
             session: Session
             if req.session_id:
@@ -62,7 +80,13 @@ async def interpret(req: InterpretRequest, request: Request) -> StreamingRespons
                 SSEEvent(event="thinking", data={"message": "Analyzing your design..."})
             ).encode("utf-8")
 
-            output = await orchestrator.run(user_prompt=req.prompt)
+            try:
+                output = await orchestrator.run(user_prompt=req.prompt)
+                breaker.record_success()
+            except InterpreterException as e:
+                if e.error.code in ("vertex_ai_timeout", "vertex_ai_rate_limit", "internal_error"):
+                    breaker.record_failure()
+                raise
 
             for ev in output.events:
                 if ev.kind == "tool_call" and ev.tool_call is not None:

@@ -53,10 +53,15 @@ def create_app(
         registry=DEFAULT_REGISTRY,
     )
 
+    from services.interpreter.agent.circuit_breaker import DegradedModeBreaker
+
     app.state.orchestrator = orchestrator
     app.state.session_store = session_store
     app.state.registry = DEFAULT_REGISTRY
     app.state.catalog = catalog
+    app.state.breaker = DegradedModeBreaker(
+        failure_threshold=2, duration_seconds=60
+    )
 
     app.include_router(interpret_router)
 
