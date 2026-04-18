@@ -13,6 +13,7 @@ from services.interpreter.agent.prompt_loader import load_system_prompt
 from services.interpreter.api.router import router as interpret_router
 from services.interpreter.domain.materials import load_catalog
 from services.interpreter.domain.primitives_registry import DEFAULT_REGISTRY
+from services.interpreter.observability.metrics import InterpreterMetrics
 from services.interpreter.session.store import SessionStore
 from services.interpreter.tools.materials import build_materials_tools
 from services.interpreter.tools.primitives import build_primitives_tools
@@ -26,6 +27,8 @@ def create_app(
     gemma: GemmaProtocol,
     session_store: SessionStore,
     cors_allowed_origins: list[str] | None = None,
+    degraded_mode_failure_threshold: int = 2,
+    degraded_mode_duration_seconds: int = 60,
 ) -> FastAPI:
     app = FastAPI(title="S1 Interpreter", version="0.1.0")
 
@@ -59,8 +62,10 @@ def create_app(
     app.state.session_store = session_store
     app.state.registry = DEFAULT_REGISTRY
     app.state.catalog = catalog
+    app.state.metrics = InterpreterMetrics()
     app.state.breaker = DegradedModeBreaker(
-        failure_threshold=2, duration_seconds=60
+        failure_threshold=degraded_mode_failure_threshold,
+        duration_seconds=degraded_mode_duration_seconds,
     )
 
     app.include_router(interpret_router)

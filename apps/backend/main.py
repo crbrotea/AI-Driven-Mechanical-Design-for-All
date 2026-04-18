@@ -32,4 +32,6 @@ app = create_app(
     gemma=gemma,
     session_store=store,
     cors_allowed_origins=settings.cors_allowed_origins,
+    degraded_mode_failure_threshold=settings.degraded_mode_failure_threshold,
+    degraded_mode_duration_seconds=settings.degraded_mode_duration_seconds,
 )

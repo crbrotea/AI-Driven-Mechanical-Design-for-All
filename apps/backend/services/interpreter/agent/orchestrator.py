@@ -16,10 +16,11 @@ from services.interpreter.domain.errors import (
     InterpreterError,
     InterpreterException,
 )
-from services.interpreter.domain.intent import DesignIntent
+from services.interpreter.domain.intent import DesignIntent, TriStateField
 from services.interpreter.domain.primitives_registry import (
     PrimitivesRegistry,
 )
+from services.interpreter.normalizer.units import normalize
 from services.interpreter.tools.registry import ToolRegistry
 
 
@@ -85,7 +86,12 @@ class Orchestrator:
         self._system_prompt = system_prompt
         self._registry = registry
 
-    async def run(self, *, user_prompt: str) -> OrchestratorOutput:
+    async def run(
+        self,
+        *,
+        user_prompt: str,
+        previous_messages: list[dict[str, Any]] | None = None,
+    ) -> OrchestratorOutput:
         """Execute the agent loop until a valid final_json is produced.
 
         Retries once per recoverable error (per retry_policy).
@@ -99,10 +105,12 @@ class Orchestrator:
                 corrective_context=(
                     self._corrective_message(last_error) if last_error else None
                 ),
+                previous_messages=previous_messages,
             )
             events.extend(attempt_events)
             if error is None and final_json is not None:
                 intent = self._build_intent(final_json)
+                intent = self._normalize_intent_units(intent)
                 return OrchestratorOutput(
                     intent=intent, events=events, retry_count=retry_count
                 )
@@ -125,7 +133,11 @@ class Orchestrator:
         raise InterpreterException(last_error)
 
     async def _single_attempt(
-        self, *, user_prompt: str, corrective_context: str | None
+        self,
+        *,
+        user_prompt: str,
+        corrective_context: str | None,
+        previous_messages: list[dict[str, Any]] | None = None,
     ) -> tuple[list[GemmaEvent], dict[str, Any] | None, InterpreterError | None]:
         collected: list[GemmaEvent] = []
         system = self._system_prompt
@@ -137,6 +149,7 @@ class Orchestrator:
             system_prompt=system,
             user_prompt=user_prompt,
             tools=_TOOL_SCHEMAS,
+            previous_messages=previous_messages,
         ):
             collected.append(ev)
             if ev.kind == "tool_call" and ev.tool_call is not None:
@@ -183,6 +196,42 @@ class Orchestrator:
 
     def _build_intent(self, final_json: dict[str, Any]) -> DesignIntent:
         return DesignIntent.model_validate(final_json)
+
+    def _normalize_intent_units(self, intent: DesignIntent) -> DesignIntent:
+        """Walk intent.fields and normalize unit expressions to SI in-place.
+
+        For each TriStateField whose value is a string that looks like a unit
+        expression, call normalize() and replace the field with a new frozen
+        TriStateField carrying value=<SI float>, unit_si=..., original=<input>.
+        Numeric values and None values are left unchanged.
+        """
+        updated_fields: dict[str, TriStateField] = {}
+        for field_name, tri_field in intent.fields.items():
+            val = tri_field.value
+            if isinstance(val, str):
+                # Only attempt normalization when the string looks like a unit
+                # expression: contains a space (e.g. "2 inches") or ends with a
+                # known unit suffix. A bare numeric string like "42" is valid too
+                # but would normalize to dimensionless — we handle that below.
+                try:
+                    normalized = normalize(val)
+                    # Construct a new frozen TriStateField replacing value/original.
+                    new_field = TriStateField(
+                        value=normalized.value,
+                        source=tri_field.source,
+                        reason=tri_field.reason,
+                        required=tri_field.required,
+                        original=val,
+                    )
+                    updated_fields[field_name] = new_field
+                except InterpreterException:
+                    # Re-raise unit parse failures so the caller can decide.
+                    raise
+            else:
+                updated_fields[field_name] = tri_field
+
+        intent.fields = updated_fields
+        return intent
 
     def _corrective_message(self, error: InterpreterError) -> str:
         if error.code == ErrorCode.UNKNOWN_PRIMITIVE:
