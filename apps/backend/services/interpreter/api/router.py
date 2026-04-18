@@ -115,7 +115,12 @@ async def interpret_refine(
     store = request.app.state.session_store
     registry = request.app.state.registry
 
-    session = await store.load(req.session_id)
+    try:
+        session = await store.load(req.session_id)
+    except InterpreterException as e:
+        if e.error.code == ErrorCode.SESSION_NOT_FOUND:
+            raise HTTPException(status_code=404, detail="Session not found.") from e
+        raise
     if session.current_intent is None:
         raise HTTPException(status_code=404, detail="No intent for this session yet.")
 
