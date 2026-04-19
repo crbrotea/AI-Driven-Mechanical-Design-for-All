@@ -71,8 +71,9 @@ async def test_hero_shelter_generates_valid_artifacts(pipeline) -> None:
         },
         composed_of=["Tensor_Rod", "Base_Connector"],
     )
-    # Panel may fail because Tensor_Rod and Base_Connector have no builders
-    # yet — this test documents that gap. Expect GeometryException for now.
-    from services.geometry.domain.errors import GeometryException
-    with pytest.raises(GeometryException):
-        await pipeline.generate(intent=intent, material_name="bamboo_laminated")
+    result = await pipeline.generate(intent=intent, material_name="bamboo_laminated")
+    # Panel + tensor + connector in bamboo, ballpark check
+    assert 10 < result.mass_properties.mass_kg < 100
+    assert result.artifacts.step_url
+    assert result.artifacts.glb_url
+    assert result.artifacts.svg_url

@@ -7,10 +7,11 @@ from services.geometry.builders import BUILDERS, get_builder
 from services.geometry.domain.errors import GeometryErrorCode, GeometryException
 
 
-def test_all_seven_primitives_registered() -> None:
+def test_all_nine_primitives_registered() -> None:
     assert set(BUILDERS.keys()) == {
         "Flywheel_Rim", "Shaft", "Bearing_Housing",
         "Pelton_Runner", "Housing", "Mounting_Frame", "Hinge_Panel",
+        "Tensor_Rod", "Base_Connector",
     }
 
 
