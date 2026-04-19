@@ -1,10 +1,14 @@
 """Intent hasher and GeometryCache (FakeGeometryCache + GcsGeometryCache)."""
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 from datetime import timedelta
 from typing import Any, Protocol
+
+import google.auth
+from google.auth.transport import requests as gar_requests
 
 from services.geometry.domain.artifacts import (
     BuiltArtifacts,
@@ -72,41 +76,87 @@ class GcsGeometryCache:
     def _bucket(self) -> Any:
         return self._client.bucket(self._bucket_name)
 
+    def _ensure_signing_credentials(self) -> tuple[str | None, str | None]:
+        """Lazily resolve ADC credentials and refresh access token."""
+        credentials, _ = google.auth.default()
+        if not hasattr(credentials, "service_account_email"):
+            # Local dev with user credentials — generate_signed_url will use
+            # whatever is available; may fail gracefully.
+            return None, None
+        credentials.refresh(gar_requests.Request())  # type: ignore[no-untyped-call]
+        return credentials.service_account_email, credentials.token
+
     def _signed_url(self, blob_name: str) -> str:
         blob = self._bucket().blob(blob_name)
-        return str(blob.generate_signed_url(expiration=self._ttl))
+        sa_email, access_token = self._ensure_signing_credentials()
+        if sa_email is None:
+            # Fallback for local dev (may raise but at least informative)
+            return str(blob.generate_signed_url(expiration=self._ttl))
+        return str(
+            blob.generate_signed_url(
+                version="v4",
+                expiration=self._ttl,
+                service_account_email=sa_email,
+                access_token=access_token,
+            )
+        )
+
+    def _upload_blob(self, blob_name: str, data: bytes | str, content_type: str) -> None:
+        """Sync helper — runs inside asyncio.to_thread."""
+        self._bucket().blob(blob_name).upload_from_string(data, content_type=content_type)
 
     async def lookup(self, intent_hash: str) -> CachedArtifacts | None:
         mass_blob = self._bucket().blob(f"cache/{intent_hash}/mass.json")
-        if not mass_blob.exists():
+        exists = await asyncio.to_thread(mass_blob.exists)
+        if not exists:
             return None
         try:
-            mass_json = mass_blob.download_as_text()
+            mass_json = await asyncio.to_thread(mass_blob.download_as_text)
             mass = MassProperties.model_validate_json(mass_json)
         except Exception:
             return None  # corruption → treat as miss
+
+        step_url, glb_url, svg_url = await asyncio.gather(
+            asyncio.to_thread(self._signed_url, f"cache/{intent_hash}/geometry.step"),
+            asyncio.to_thread(self._signed_url, f"cache/{intent_hash}/geometry.glb"),
+            asyncio.to_thread(self._signed_url, f"cache/{intent_hash}/section.svg"),
+        )
         return CachedArtifacts(
             mass_properties=mass,
-            step_url=self._signed_url(f"cache/{intent_hash}/geometry.step"),
-            glb_url=self._signed_url(f"cache/{intent_hash}/geometry.glb"),
-            svg_url=self._signed_url(f"cache/{intent_hash}/section.svg"),
+            step_url=step_url,
+            glb_url=glb_url,
+            svg_url=svg_url,
         )
 
     async def store(
         self, intent_hash: str, artifacts: BuiltArtifacts
     ) -> CachedArtifacts:
         try:
-            self._bucket().blob(f"cache/{intent_hash}/geometry.step").upload_from_string(
-                artifacts.step_bytes, content_type="application/step"
-            )
-            self._bucket().blob(f"cache/{intent_hash}/geometry.glb").upload_from_string(
-                artifacts.glb_bytes, content_type="model/gltf-binary"
-            )
-            self._bucket().blob(f"cache/{intent_hash}/section.svg").upload_from_string(
-                artifacts.svg_bytes, content_type="image/svg+xml"
-            )
-            self._bucket().blob(f"cache/{intent_hash}/mass.json").upload_from_string(
-                artifacts.mass.model_dump_json(), content_type="application/json"
+            await asyncio.gather(
+                asyncio.to_thread(
+                    self._upload_blob,
+                    f"cache/{intent_hash}/geometry.step",
+                    artifacts.step_bytes,
+                    "application/step",
+                ),
+                asyncio.to_thread(
+                    self._upload_blob,
+                    f"cache/{intent_hash}/geometry.glb",
+                    artifacts.glb_bytes,
+                    "model/gltf-binary",
+                ),
+                asyncio.to_thread(
+                    self._upload_blob,
+                    f"cache/{intent_hash}/section.svg",
+                    artifacts.svg_bytes,
+                    "image/svg+xml",
+                ),
+                asyncio.to_thread(
+                    self._upload_blob,
+                    f"cache/{intent_hash}/mass.json",
+                    artifacts.mass.model_dump_json(),
+                    "application/json",
+                ),
             )
         except Exception as e:
             GeometryError(
@@ -115,9 +165,14 @@ class GcsGeometryCache:
                 stage="upload",
             ).raise_as()
 
+        step_url, glb_url, svg_url = await asyncio.gather(
+            asyncio.to_thread(self._signed_url, f"cache/{intent_hash}/geometry.step"),
+            asyncio.to_thread(self._signed_url, f"cache/{intent_hash}/geometry.glb"),
+            asyncio.to_thread(self._signed_url, f"cache/{intent_hash}/section.svg"),
+        )
         return CachedArtifacts(
             mass_properties=artifacts.mass,
-            step_url=self._signed_url(f"cache/{intent_hash}/geometry.step"),
-            glb_url=self._signed_url(f"cache/{intent_hash}/geometry.glb"),
-            svg_url=self._signed_url(f"cache/{intent_hash}/section.svg"),
+            step_url=step_url,
+            glb_url=glb_url,
+            svg_url=svg_url,
         )
