@@ -9,12 +9,12 @@ from pathlib import Path
 
 from services.geometry.domain.artifacts import CachedArtifacts, MassProperties
 
-# Hashes computed from canonical hero intents. Regenerate whenever the
-# hero intent definitions change (should be rare).
+# Hashes computed from canonical hero intents via compute_intent_hash().
+# Regenerate whenever the hero intent definitions change (should be rare).
 DEMO_INTENT_HASHES: dict[str, str] = {
-    "hero_flywheel_500kj_3000rpm": "0000000000000000",
-    "hero_hydro_5cms_20m": "1111111111111111",
-    "hero_shelter_4p_100kmh": "2222222222222222",
+    "hero_flywheel_500kj_3000rpm": "c03a446d17fc0fd5",
+    "hero_hydro_5cms_20m": "10f365e8a14cb72f",
+    "hero_shelter_4p_100kmh": "3adb6a2a7c405856",
 }
 
 
@@ -41,11 +41,11 @@ async def lookup_demo_fallback(
     except Exception:
         return None
 
-    # Use file:// URLs — the router should detect the fallback case
-    # and stream bytes directly, bypassing signed-URL semantics.
+    # Return relative proxy URLs — the frontend prepends the API base URL.
+    # The /generate/demo_artifact/{hash}/{filename} endpoint streams bytes from disk.
     return CachedArtifacts(
         mass_properties=mass,
-        step_url=f"file://{dir_ / 'geometry.step'}",
-        glb_url=f"file://{dir_ / 'geometry.glb'}",
-        svg_url=f"file://{dir_ / 'section.svg'}",
+        step_url=f"/generate/demo_artifact/{intent_hash}/geometry.step",
+        glb_url=f"/generate/demo_artifact/{intent_hash}/geometry.glb",
+        svg_url=f"/generate/demo_artifact/{intent_hash}/section.svg",
     )

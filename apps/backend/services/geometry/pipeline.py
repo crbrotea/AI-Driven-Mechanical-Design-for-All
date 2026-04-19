@@ -87,6 +87,30 @@ class GeometryPipeline:
             }
             return
 
+        # GCS miss — try demo fallback before triggering a full rebuild.
+        # This is the GCS-down safety net: hero intents with pre-generated
+        # artifacts on disk are served without touching GCS at all.
+        from services.geometry.fallback import lookup_demo_fallback
+        cached = await lookup_demo_fallback(intent_hash)
+        if cached is not None:
+            yield {"event": "progress", "data": {"step": "fallback_hit", "pct": 10}}
+            yield {
+                "event": "final",
+                "data": GenerateResponse(
+                    cache_hit=True,  # treat fallback as cache-hit for the client
+                    intent_hash=intent_hash,
+                    artifacts=GenerateArtifactUrls(
+                        step_url=cached.step_url,
+                        glb_url=cached.glb_url,
+                        svg_url=cached.svg_url,
+                    ),
+                    mass_properties=cached.mass_properties,
+                    material_name=material.name,
+                    material_density_kg_m3=material.density_kg_m3,
+                ).model_dump(),
+            }
+            return
+
         yield {"event": "progress", "data": {"step": "building_main", "pct": 15,
                                              "primitive": intent.type}}
         compound = compose_assembly(intent)

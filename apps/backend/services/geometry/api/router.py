@@ -6,7 +6,7 @@ import time
 from collections.abc import AsyncIterator
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
 from services.geometry.api.dto import (
     GenerateArtifactUrls,
@@ -18,6 +18,7 @@ from services.geometry.api.streaming import (
     serialize_geometry_sse,
 )
 from services.geometry.domain.errors import GeometryException
+from services.geometry.fallback import DEFAULT_FALLBACK_BASE, DEMO_INTENT_HASHES
 from services.interpreter.observability.logging import get_logger, hash_prompt
 
 router = APIRouter()
@@ -119,6 +120,32 @@ async def generate(req: GenerateRequest, request: Request) -> StreamingResponse:
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+_ALLOWED_FILENAMES = frozenset({"geometry.step", "geometry.glb", "section.svg", "mass.json"})
+
+_MEDIA_TYPES: dict[str, str] = {
+    "geometry.step": "application/step",
+    "geometry.glb": "model/gltf-binary",
+    "section.svg": "image/svg+xml",
+    "mass.json": "application/json",
+}
+
+
+@router.get("/generate/demo_artifact/{intent_hash}/{filename}")
+async def get_demo_artifact(intent_hash: str, filename: str) -> FileResponse:
+    """Stream a pre-generated demo artifact from disk.
+
+    Used as fallback when GCS is unavailable during the live demo.
+    """
+    if intent_hash not in DEMO_INTENT_HASHES.values():
+        raise HTTPException(status_code=404, detail="unknown_demo_hash")
+    if filename not in _ALLOWED_FILENAMES:
+        raise HTTPException(status_code=400, detail="invalid_filename")
+    file_path = DEFAULT_FALLBACK_BASE / intent_hash / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="artifact_not_found")
+    return FileResponse(file_path, media_type=_MEDIA_TYPES[filename])
 
 
 @router.get("/generate/artifacts/{intent_hash}", response_model=GenerateResponse)
