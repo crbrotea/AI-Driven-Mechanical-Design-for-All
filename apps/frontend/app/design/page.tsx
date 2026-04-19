@@ -1,17 +1,29 @@
 'use client'
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { ChatPanel } from '@/components/chat/ChatPanel'
 import { FormPanel } from '@/components/form/FormPanel'
-import { ViewerPanel } from '@/components/viewer/ViewerPanel'
 import { Topbar } from '@/components/shared/Topbar'
-import { ToastContainer } from '@/components/ui/toast'
+import { ToastContainer, toast } from '@/components/ui/toast'
 import { ProgressStream } from '@/components/shared/ProgressStream'
 import { ErrorBanner } from '@/components/shared/ErrorBanner'
 import { useGenerateStream } from '@/lib/hooks/useGenerateStream'
 import { useArtifacts } from '@/lib/hooks/useArtifacts'
 import { getOrCreateSessionId, setSessionId } from '@/lib/session-storage'
 import type { DesignIntent } from '@/lib/types'
+
+const ViewerPanel = dynamic(
+  () => import('@/components/viewer/ViewerPanel').then((m) => m.ViewerPanel),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="grid h-full place-items-center text-sm text-muted-foreground">
+        Loading viewer...
+      </div>
+    ),
+  },
+)
 
 const PRESET_PROMPTS: Record<string, string> = {
   flywheel: 'Design a flywheel storing 500 kJ at 3000 RPM',
@@ -30,7 +42,8 @@ function DesignPageInner() {
   const [intent, setIntent] = useState<DesignIntent | null>(null)
   const { state: genState, start: startGen, result, events: genEvents, error: genError } =
     useGenerateStream()
-  const { artifacts: cachedArtifacts } = useArtifacts(hashParam)
+  const { artifacts: cachedArtifacts, error: artifactsError, isLoading: artifactsLoading } =
+    useArtifacts(hashParam)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -52,7 +65,43 @@ function DesignPageInner() {
     await startGen(i, material, sessionId)
   }
 
+  const hashOnlyMode = Boolean(hashParam)
   const viewerResult = result ?? cachedArtifacts
+
+  // Hash-only mode: fire a toast when artifacts fail to load (404 / network)
+  useEffect(() => {
+    if (hashOnlyMode && artifactsError) {
+      toast('This design was not found', 'error')
+    }
+  }, [hashOnlyMode, artifactsError])
+
+  // Hash-only mode: loading state — show spinner, not the 3-col layout
+  if (hashOnlyMode && artifactsLoading && !cachedArtifacts && !artifactsError) {
+    return (
+      <div className="flex h-screen flex-col">
+        <Topbar />
+        <main className="flex flex-1 items-center justify-center">
+          <div className="text-sm text-muted-foreground">Loading design...</div>
+        </main>
+        <ToastContainer />
+      </div>
+    )
+  }
+
+  // Hash-only mode: resolved (artifacts loaded) — show viewer only
+  if (hashOnlyMode && cachedArtifacts) {
+    return (
+      <div className="flex h-screen flex-col">
+        <Topbar />
+        <main className="flex-1">
+          <ViewerPanel result={viewerResult} />
+        </main>
+        <ToastContainer />
+      </div>
+    )
+  }
+
+  // Hash-only mode: error (404 or network) — fall through to 3-col layout with toast already fired above
 
   return (
     <div className="flex h-screen flex-col">

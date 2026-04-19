@@ -45,3 +45,21 @@ export const BackendErrorSchema = z.object({
   details: z.record(z.unknown()).nullable().optional(),
   retry_after: z.number().nullable().optional(),
 })
+
+export const SessionMessageSchema = z.object({
+  role: z.enum(['user', 'assistant', 'tool']),
+  content: z.string(),
+  tool_calls: z.unknown().optional(),
+  timestamp: z.string(),
+})
+
+export const SessionSchema = z.object({
+  session_id: z.string(),
+  user_id: z.string(),
+  language: z.enum(['es', 'en']),
+  created_at: z.string(),
+  updated_at: z.string(),
+  messages: z.array(SessionMessageSchema),
+  current_intent: DesignIntentSchema.nullable(),
+  user_overrides: z.record(TriStateFieldSchema),
+})

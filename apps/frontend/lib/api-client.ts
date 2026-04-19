@@ -1,3 +1,4 @@
+import type { ZodType } from 'zod'
 import type { SSEEvent } from './types'
 import { parseSSE } from './sse-parser'
 
@@ -12,20 +13,22 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiGet<T>(path: string): Promise<T> {
+export async function apiGet<T>(path: string, schema?: ZodType<T>): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { credentials: 'omit' })
   if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => null))
-  return (await res.json()) as T
+  const body = await res.json()
+  return schema ? schema.parse(body) : (body as T)
 }
 
-export async function apiPost<T>(path: string, body: unknown): Promise<T> {
+export async function apiPost<T>(path: string, body: unknown, schema?: ZodType<T>): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
   if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => null))
-  return (await res.json()) as T
+  const data = await res.json()
+  return schema ? schema.parse(data) : (data as T)
 }
 
 export async function* apiStream(
