@@ -18,12 +18,10 @@ export function ErrorBanner({
   return (
     <div className={`flex items-center justify-between rounded-md p-3 text-white ${bg}`} role="alert">
       <span>
-        {/* @ts-expect-error dynamic key */}
         {t(display.i18nKey, { field: error.field, seconds: error.retry_after })}
       </span>
       {onRetry && (
         <Button size="sm" variant="outline" onClick={onRetry}>
-          {/* @ts-expect-error dynamic key */}
           {t(`actions.${display.action}`)}
         </Button>
       )}

@@ -14,7 +14,6 @@ export function StreamingIndicator({ events }: { events: SSEEvent[] }) {
         const labelKey = `tool_calls.${tool}` as const
         return (
           <div key={i} className="text-xs">
-            {/* @ts-expect-error dynamic key */}
             🔍 {t(labelKey, { primitive: args.name as string, material: args.name as string })}
           </div>
         )
