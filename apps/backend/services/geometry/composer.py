@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from build123d import Compound, Part
+from build123d import Compound, Part, ShapeList
 
 from services.geometry.builders import get_builder
 from services.geometry.composition_rules import COMPOSITION_RULES
@@ -70,7 +70,8 @@ def _fuse(parts: list[Part]) -> Compound:
             stage="build",
         ).raise_as()
         raise
-    return Compound(children=[result])
+    children = list(result) if isinstance(result, ShapeList) else [result]
+    return Compound(children=children)
 
 
 def _extract_numeric_values(
