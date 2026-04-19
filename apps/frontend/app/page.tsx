@@ -1,10 +1,11 @@
-import { getTranslations } from 'next-intl/server'
+'use client'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { HeroCard } from '@/components/landing/HeroCard'
 import { Topbar } from '@/components/shared/Topbar'
 
-export default async function Landing() {
-  const t = await getTranslations('landing.hero')
+export default function Landing() {
+  const t = useTranslations('landing.hero')
   return (
     <>
       <Topbar />

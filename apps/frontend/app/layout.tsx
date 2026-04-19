@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { getLocale } from 'next-intl/server'
+import { ClientProviders } from '@/components/shared/ClientProviders'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -7,11 +7,12 @@ export const metadata: Metadata = {
   description: 'Design mechanical parts in natural language',
 }
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const locale = await getLocale()
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={locale}>
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ClientProviders>{children}</ClientProviders>
+      </body>
     </html>
   )
 }
