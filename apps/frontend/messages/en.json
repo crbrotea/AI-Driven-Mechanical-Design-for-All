@@ -1,0 +1,92 @@
+{
+  "landing": {
+    "hero": {
+      "headline": "Design mechanical parts in natural language",
+      "subline": "AI-driven CAD for everyone, no engineering degree required",
+      "cta": "Start designing"
+    },
+    "heroes": {
+      "flywheel": { "title": "Energy Flywheel", "subtitle": "Store 500 kJ of kinetic energy" },
+      "hydro": { "title": "Hydro Generator", "subtitle": "5 m³/s flow, 20m head" },
+      "shelter": { "title": "Foldable Shelter", "subtitle": "For 4 people, 100 km/h winds" }
+    }
+  },
+  "chat": {
+    "placeholder": "Describe your design...",
+    "send": "Send",
+    "thinking": "Analyzing your design...",
+    "tool_calls": {
+      "list_primitives": "Discovering available primitives",
+      "get_primitive_schema": "Analyzing {primitive}",
+      "search_materials": "Searching suitable materials",
+      "get_material_properties": "Looking up material properties"
+    }
+  },
+  "form": {
+    "title": "Design Parameters",
+    "placeholder": "Describe your design in the chat to see parameters here",
+    "source": {
+      "extracted": "From your input",
+      "defaulted": "AI default",
+      "missing": "Required",
+      "user": "Your override",
+      "invalid": "Invalid"
+    },
+    "material": "Material",
+    "generate": "Generate geometry"
+  },
+  "viewer": {
+    "placeholder": "Your 3D design will appear here",
+    "loading": "Loading 3D model...",
+    "mass": "Mass",
+    "volume": "Volume",
+    "bbox": "Dimensions",
+    "download_step": "Download STEP",
+    "download_glb": "Download GLB",
+    "wireframe": "Wireframe",
+    "background": "Dark background",
+    "reset": "Reset view"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "connection_lost": "Connection interrupted. Retry?",
+    "validation": {
+      "out_of_range": "The field '{field}' is outside the allowed range."
+    },
+    "interpret": {
+      "invalid_json": "I couldn't understand the response. Retrying.",
+      "unknown_primitive": "I tried to use a component that doesn't exist."
+    },
+    "geometry": {
+      "param_range": "Parameter out of range.",
+      "composition_missing": "Composition not supported. Please report.",
+      "build_failed": "I couldn't generate this geometry.",
+      "boolean_failed": "The parts don't fit together.",
+      "gcs_down": "Cloud storage temporarily unavailable.",
+      "unknown_material": "Select a valid material.",
+      "upload_failed": "Upload failed. Retry later."
+    },
+    "infra": {
+      "timeout": "The server took too long.",
+      "rate_limit": "Too many requests. Wait {seconds}s."
+    },
+    "session": {
+      "expired": "Your session expired. Starting fresh."
+    }
+  },
+  "actions": {
+    "retry": "Retry",
+    "retry_later": "Retry later",
+    "retry_after": "Retry in a moment",
+    "fix_field": "Fix field",
+    "new_session": "New design",
+    "simplify_params": "Simplify parameters",
+    "select_valid": "Select material",
+    "report_bug": "Report issue",
+    "contact_support": "Contact support"
+  },
+  "topbar": {
+    "locale_toggle": "Switch to {locale}",
+    "theme_toggle": "Toggle theme"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "landing": {
+    "hero": {
+      "headline": "Diseñá piezas mecánicas en lenguaje natural",
+      "subline": "CAD impulsado por IA, sin necesidad de ser ingeniero",
+      "cta": "Empezar a diseñar"
+    },
+    "heroes": {
+      "flywheel": { "title": "Volante de Inercia", "subtitle": "Almacená 500 kJ de energía cinética" },
+      "hydro": { "title": "Generador Hidroeléctrico", "subtitle": "Flujo 5 m³/s, caída 20m" },
+      "shelter": { "title": "Refugio Plegable", "subtitle": "Para 4 personas, viento 100 km/h" }
+    }
+  },
+  "chat": {
+    "placeholder": "Describe tu diseño...",
+    "send": "Enviar",
+    "thinking": "Analizando tu diseño...",
+    "tool_calls": {
+      "list_primitives": "Descubriendo primitivas disponibles",
+      "get_primitive_schema": "Analizando {primitive}",
+      "search_materials": "Buscando materiales adecuados",
+      "get_material_properties": "Consultando propiedades del material"
+    }
+  },
+  "form": {
+    "title": "Parámetros del Diseño",
+    "placeholder": "Describí tu diseño en el chat para ver los parámetros",
+    "source": {
+      "extracted": "De tu entrada",
+      "defaulted": "Default de IA",
+      "missing": "Requerido",
+      "user": "Tu override",
+      "invalid": "Inválido"
+    },
+    "material": "Material",
+    "generate": "Generar geometría"
+  },
+  "viewer": {
+    "placeholder": "Tu diseño 3D aparecerá aquí",
+    "loading": "Cargando modelo 3D...",
+    "mass": "Masa",
+    "volume": "Volumen",
+    "bbox": "Dimensiones",
+    "download_step": "Descargar STEP",
+    "download_glb": "Descargar GLB",
+    "wireframe": "Wireframe",
+    "background": "Fondo oscuro",
+    "reset": "Resetear vista"
+  },
+  "errors": {
+    "generic": "Algo salió mal. Intentá de nuevo.",
+    "connection_lost": "Conexión interrumpida. ¿Reintentar?",
+    "validation": {
+      "out_of_range": "El campo '{field}' está fuera del rango permitido."
+    },
+    "interpret": {
+      "invalid_json": "No entendí la respuesta. Reintentando.",
+      "unknown_primitive": "Intenté usar un componente inexistente."
+    },
+    "geometry": {
+      "param_range": "Parámetro fuera de rango.",
+      "composition_missing": "Composición no soportada. Reportá por favor.",
+      "build_failed": "No pude generar esta geometría.",
+      "boolean_failed": "Las partes no encajan.",
+      "gcs_down": "Almacenamiento no disponible temporalmente.",
+      "unknown_material": "Seleccioná un material válido.",
+      "upload_failed": "Falla de subida. Reintentá luego."
+    },
+    "infra": {
+      "timeout": "El servidor tardó demasiado.",
+      "rate_limit": "Muchas solicitudes. Esperá {seconds}s."
+    },
+    "session": {
+      "expired": "Tu sesión expiró. Empezando nueva."
+    }
+  },
+  "actions": {
+    "retry": "Reintentar",
+    "retry_later": "Reintentar luego",
+    "retry_after": "Reintentar en un momento",
+    "fix_field": "Ajustar campo",
+    "new_session": "Nuevo diseño",
+    "simplify_params": "Simplificar parámetros",
+    "select_valid": "Elegir material",
+    "report_bug": "Reportar problema",
+    "contact_support": "Contactar soporte"
+  },
+  "topbar": {
+    "locale_toggle": "Cambiar a {locale}",
+    "theme_toggle": "Alternar tema"
+  }
+}
