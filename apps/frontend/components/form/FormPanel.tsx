@@ -5,7 +5,7 @@ import { useIntent } from '@/lib/hooks/useIntent'
 import { FieldRow } from './FieldRow'
 import { MaterialSelector } from './MaterialSelector'
 import { GenerateButton } from './GenerateButton'
-import type { DesignIntent } from '@/lib/types'
+import type { DesignIntent, TriStateField } from '@/lib/types'
 
 export function FormPanel({
   sessionId,
@@ -17,16 +17,36 @@ export function FormPanel({
   onGenerate: (intent: DesignIntent, material: string) => void
 }) {
   const t = useTranslations('form')
-  const { intent: fetchedIntent, hasMissingFields, refineIntent } = useIntent(sessionId)
+  const { intent: fetchedIntent, hasMissingFields: sessionHasMissing, refineIntent } = useIntent(sessionId)
   const intent = overrideIntent ?? fetchedIntent
   const [material, setMaterial] = useState('steel_a36')
+  // Track which previously-missing fields have been given a value by the user
+  const [filledMissing, setFilledMissing] = useState<Set<string>>(new Set())
 
   if (!intent) {
-    return <div className="p-4 text-sm text-muted-foreground">{t('placeholder')}</div>
+    return <div className="p-4 text-muted-foreground text-sm">{t('placeholder')}</div>
   }
+
+  // When overrideIntent is active we compute hasMissingFields locally, accounting for
+  // fields the user has already typed a value into (which refine has not yet persisted).
+  const hasMissingFields = overrideIntent
+    ? Object.entries(intent.fields).some(
+        ([name, f]) =>
+          (f as TriStateField).source === 'missing' && !filledMissing.has(name),
+      )
+    : sessionHasMissing
 
   async function onFieldChange(name: string, value: string) {
     const num = value === '' ? null : Number.isFinite(Number(value)) ? Number(value) : value
+    if (num !== null && num !== '') {
+      setFilledMissing((prev) => new Set([...prev, name]))
+    } else {
+      setFilledMissing((prev) => {
+        const next = new Set(prev)
+        next.delete(name)
+        return next
+      })
+    }
     await refineIntent({ [name]: num })
   }
 
