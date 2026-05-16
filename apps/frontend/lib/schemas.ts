@@ -63,3 +63,34 @@ export const SessionSchema = z.object({
   current_intent: DesignIntentSchema.nullable(),
   user_overrides: z.record(TriStateFieldSchema),
 })
+
+export const analysisResultSchema = z.object({
+  intent_type: z.string(),
+  material_name: z.string(),
+  material_yield_mpa: z.number(),
+  formula: z.string(),
+  stress_max_pa: z.number(),
+  displacement_max_m: z.number(),
+  safety_factor: z.number(),
+  verdict: z.enum(['pass', 'warn', 'fail']),
+  inputs: z.record(z.string(), z.number()),
+  notes: z.string().nullable().optional(),
+})
+
+export const naturalReportSchema = z.object({
+  summary: z.string(),
+  risks: z.array(z.string()).default([]),
+  suggestions: z.array(z.string()).default([]),
+  analogies: z.array(z.string()).default([]),
+  facts_used: z.array(z.string()).default([]),
+})
+
+export const deliverablesSchema = z.object({
+  report_pdf_url: z.string(),
+  drawing_pdf_url: z.string(),
+  step_url: z.string(),
+  glb_url: z.string(),
+  svg_url: z.string(),
+  cache_hit: z.boolean(),
+  cache_key: z.string(),
+})

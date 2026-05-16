@@ -50,3 +50,59 @@ describe('schemas', () => {
     expect(BackendErrorSchema.parse(err).code).toBe('invalid_json_retry_failed')
   })
 })
+
+import {
+  analysisResultSchema,
+  naturalReportSchema,
+  deliverablesSchema,
+} from './schemas'
+
+describe('analysisResultSchema', () => {
+  it('accepts a valid result', () => {
+    const ok = analysisResultSchema.parse({
+      intent_type: 'Flywheel_Rim',
+      material_name: 'steel_a36',
+      material_yield_mpa: 250,
+      formula: 'sigma = rho*omega^2*R^2',
+      stress_max_pa: 1.93e8,
+      displacement_max_m: 4.84e-4,
+      safety_factor: 1.29,
+      verdict: 'warn',
+      inputs: { angular_velocity_rad_s: 314.16 },
+      notes: null,
+    })
+    expect(ok.verdict).toBe('warn')
+  })
+
+  it('rejects an unknown verdict', () => {
+    expect(() =>
+      analysisResultSchema.parse({
+        intent_type: 'Flywheel_Rim', material_name: 'steel_a36',
+        material_yield_mpa: 250, formula: 'x',
+        stress_max_pa: 0, displacement_max_m: 0,
+        safety_factor: 0, verdict: 'oops', inputs: {},
+      }),
+    ).toThrow()
+  })
+})
+
+describe('naturalReportSchema', () => {
+  it('defaults missing lists to empty', () => {
+    const r = naturalReportSchema.parse({ summary: 'ok' })
+    expect(r.risks).toEqual([])
+    expect(r.suggestions).toEqual([])
+    expect(r.analogies).toEqual([])
+    expect(r.facts_used).toEqual([])
+  })
+})
+
+describe('deliverablesSchema', () => {
+  it('requires the five URLs and cache fields', () => {
+    const d = deliverablesSchema.parse({
+      report_pdf_url: 'a', drawing_pdf_url: 'b',
+      step_url: 'c', glb_url: 'd', svg_url: 'e',
+      cache_hit: true, cache_key: 'abc',
+    })
+    expect(d.cache_hit).toBe(true)
+  })
+})

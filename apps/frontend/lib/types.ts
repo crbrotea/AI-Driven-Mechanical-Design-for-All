@@ -74,3 +74,41 @@ export type SSEEvent =
   | { event: 'progress'; data: { step: string; pct: number; primitive?: string; message?: string } }
   | { event: 'final'; data: GenerateResponse | { session_id: string; intent: DesignIntent; language: 'es' | 'en' } }
   | { event: 'error'; data: BackendError }
+
+export interface AnalysisResult {
+  intent_type: string
+  material_name: string
+  material_yield_mpa: number
+  formula: string
+  stress_max_pa: number
+  displacement_max_m: number
+  safety_factor: number
+  verdict: 'pass' | 'warn' | 'fail'
+  inputs: Record<string, number>
+  notes?: string | null
+}
+
+export interface NaturalReport {
+  summary: string
+  risks: string[]
+  suggestions: string[]
+  analogies: string[]
+  facts_used: string[]
+}
+
+export interface Deliverables {
+  report_pdf_url: string
+  drawing_pdf_url: string
+  step_url: string
+  glb_url: string
+  svg_url: string
+  cache_hit: boolean
+  cache_key: string
+}
+
+export interface CachedArtifacts {
+  mass_properties: MassProperties
+  step_url: string
+  glb_url: string
+  svg_url: string
+}
