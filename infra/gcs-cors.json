@@ -1,0 +1,6 @@
+[{
+  "origin": ["https://mechdesign.vercel.app", "http://localhost:3000"],
+  "method": ["GET","HEAD","OPTIONS"],
+  "responseHeader": ["Content-Type","Range"],
+  "maxAgeSeconds": 3600
+}]
