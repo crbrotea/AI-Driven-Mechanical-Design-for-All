@@ -54,3 +54,30 @@ See [design spec](../../docs/superpowers/specs/2026-04-19-frontend-design.md).
 
 The `ErrorBanner` renders with `gcs_unavailable` or `connection_lost` codes.
 Degraded mode is driven by the backend's demo-fallback endpoint; frontend is transparent.
+
+## Backend endpoints consumed
+
+This frontend talks to a FastAPI backend (`apps/backend/`) via `NEXT_PUBLIC_API_URL`.
+
+| Endpoint | Method | Hook | Purpose |
+|---|---|---|---|
+| `/interpret` | POST (SSE) | `useInterpretStream` | NL prompt → `DesignIntent` |
+| `/generate` | POST (SSE) | `useGenerateStream` | `DesignIntent` → STEP/GLB/SVG + mass |
+| `/analyze` | POST (JSON) | `useAnalyze` | `DesignIntent` → `AnalysisResult` (SF, verdict, formula) |
+| `/explain` | POST (SSE) | `useExplainStream` | `AnalysisResult` → streamed `NaturalReport` |
+| `/document` | POST (JSON) | `useDocument` | full pipeline → `Deliverables` (PDFs + URLs) |
+
+### Environment
+
+- Local dev: backend on `http://localhost:8080`; set `NEXT_PUBLIC_API_URL=http://localhost:8080`.
+- Production: backend on Cloud Run (`mechdesign-backend` service, `mechdesign-ai` project). Set `NEXT_PUBLIC_API_URL` in Vercel project settings to the Cloud Run URL.
+
+### Pipeline UI
+
+`/design` page mounts six panels:
+- `FormPanel` — tri-state form filled by `/interpret`
+- `ChatPanel` — conversation history
+- `ViewerPanel` — R3F 3D model from GLB
+- `AnalysisPanel` — verdict badge, SF, formula
+- `NarrativePanel` — streaming `NaturalReport`
+- `DeliverablesPanel` — 5 download links + inline PDF preview
