@@ -19,6 +19,8 @@ from vertexai.generative_models import (
 from services.interpreter.agent.gemma_client import (
     GemmaEvent,
     GemmaToolCall,
+    VertexRateLimited,
+    VertexTimeout,
 )
 from services.interpreter.domain.errors import ErrorCode, InterpreterError
 
@@ -127,3 +129,40 @@ class VertexGemmaClient:
                                 kind="error",
                                 error_message=f"Non-JSON final content: {part.text[:100]}",
                             )
+
+    async def generate_text_streaming(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+    ) -> AsyncIterator[str]:
+        """Plain text streaming, no tools. Yields raw text chunks.
+
+        Uses response_mime_type='application/json' so Gemma produces JSON
+        directly. The caller is responsible for parsing the accumulated text.
+        """
+        contents: list[Any] = [system_prompt, user_prompt]
+        try:
+            stream = await asyncio.wait_for(
+                self._model.generate_content_async(
+                    contents,
+                    generation_config={
+                        "temperature": self._temperature,
+                        "max_output_tokens": self._max_output_tokens,
+                        "response_mime_type": "application/json",
+                    },
+                    stream=True,
+                ),
+                timeout=self._timeout_s,
+            )
+        except TimeoutError as exc:
+            raise VertexTimeout("Vertex AI text streaming timed out") from exc
+        except google_exc.ResourceExhausted as exc:
+            raise VertexRateLimited(f"Vertex AI quota exhausted: {exc}") from exc
+
+        async for chunk in stream:
+            for candidate in chunk.candidates:
+                for part in candidate.content.parts:
+                    text = getattr(part, "text", "")
+                    if text:
+                        yield text
