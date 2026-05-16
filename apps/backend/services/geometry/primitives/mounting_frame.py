@@ -1,4 +1,7 @@
-"""Mounting_Frame primitive builder — rectangular base plate."""
+"""Mounting_Frame primitive builder — rectangular base plate.
+
+Governing formula: V = length_m * width_m * height_m (rectangular prism).
+"""
 from __future__ import annotations
 
 from build123d import Box, Part

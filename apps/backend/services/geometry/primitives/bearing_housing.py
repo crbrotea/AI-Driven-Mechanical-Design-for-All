@@ -1,6 +1,9 @@
 """Bearing_Housing primitive builder.
 
 Height is derived as 40% of outer diameter (common ratio for pillow blocks).
+
+Governing formula: V = π/4 * (D_outer² - D_bore²) * (0.4 * D_outer)
+where D_outer = outer_diameter_m, D_bore = bore_diameter_m.
 """
 from __future__ import annotations
 

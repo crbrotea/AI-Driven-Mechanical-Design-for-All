@@ -1,4 +1,11 @@
-"""Housing primitive builder — hollow cylindrical enclosure."""
+"""Housing primitive builder — hollow cylindrical enclosure.
+
+Length is derived as 1.5 * inner_diameter.
+
+Governing formula:
+    V = π * (D_outer² - D_inner²) / 4 * (1.5 * D_inner)
+where D_inner = inner_diameter_m, D_outer = D_inner + 2 * wall_thickness_m.
+"""
 from __future__ import annotations
 
 from build123d import Cylinder, Part

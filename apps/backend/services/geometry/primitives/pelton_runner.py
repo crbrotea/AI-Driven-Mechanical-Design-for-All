@@ -2,6 +2,11 @@
 
 Represented as a disk with simplified bucket pockets as cylindrical cavities
 around the periphery. Sufficient for visualization and mass estimation.
+
+Governing formula:
+    V = π/4 * D² * (0.1 * D) - N * π * (0.06 * D)² * (0.1 * D)
+where D = runner_diameter_m, N = bucket_count.
+Disk thickness is 10% of D; bucket radius is 12% of disk radius (0.06 D).
 """
 from __future__ import annotations
 

@@ -1,4 +1,7 @@
-"""Hinge_Panel primitive — rigid panel hinged at one edge."""
+"""Hinge_Panel primitive — rigid panel hinged at one edge.
+
+Governing formula: V = width_m * height_m * thickness_m (rectangular prism).
+"""
 from __future__ import annotations
 
 from build123d import Box, Part
