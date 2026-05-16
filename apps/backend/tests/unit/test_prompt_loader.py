@@ -12,10 +12,11 @@ def test_load_system_prompt_returns_full_text() -> None:
     prompts_dir = Path(__file__).parent.parent.parent / "prompts"
     prompt = load_system_prompt(prompts_dir)
     assert "Role" in prompt
-    assert "Tools Protocol" in prompt
+    assert "Available primitives" in prompt
+    assert "Available materials" in prompt
     assert "Output Contract" in prompt
     assert "tri-state" in prompt.lower()
-    assert "list_primitives" in prompt
+    assert "Flywheel_Rim" in prompt
     assert len(prompt) > 500
 
 
