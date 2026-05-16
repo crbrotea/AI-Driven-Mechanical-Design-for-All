@@ -20,11 +20,15 @@ class FakeSessionStore:
         self._sessions: dict[str, Session] = {}
 
     async def create_session(
-        self, *, user_id: str, language: Literal["es", "en"]
+        self,
+        *,
+        user_id: str,
+        language: Literal["es", "en"],
+        session_id: str | None = None,
     ) -> Session:
         now = datetime.now(UTC)
         session = Session(
-            session_id=str(uuid.uuid4()),
+            session_id=session_id or str(uuid.uuid4()),
             user_id=user_id,
             language=language,
             created_at=now,

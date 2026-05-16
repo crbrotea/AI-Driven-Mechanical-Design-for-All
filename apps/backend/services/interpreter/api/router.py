@@ -79,7 +79,16 @@ async def interpret(req: InterpretRequest, request: Request) -> StreamingRespons
         session: Session | None = None
         try:
             if req.session_id:
-                session = await store.load(req.session_id)
+                try:
+                    session = await store.load(req.session_id)
+                except InterpreterException as load_exc:
+                    if load_exc.error.code != ErrorCode.SESSION_NOT_FOUND:
+                        raise
+                    session = await store.create_session(
+                        user_id="anonymous",
+                        language=language,
+                        session_id=req.session_id,
+                    )
             else:
                 session = await store.create_session(
                     user_id="anonymous", language=language
@@ -274,5 +283,13 @@ async def interpret_refine(
 @router.get("/interpret/sessions/{session_id}")
 async def get_session(session_id: str, request: Request) -> dict[str, Any]:
     store = request.app.state.session_store
-    session = await store.load(session_id)
+    try:
+        session = await store.load(session_id)
+    except InterpreterException as exc:
+        if exc.error.code == ErrorCode.SESSION_NOT_FOUND:
+            raise HTTPException(
+                status_code=404,
+                detail={"code": exc.error.code.value, "message": exc.error.message},
+            ) from exc
+        raise
     return {"session": session.model_dump(mode="json")}
