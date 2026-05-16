@@ -55,13 +55,24 @@ class VertexGemmaClient:
         declarations = [FunctionDeclaration(**t) for t in tools]
         vertex_tools = [Tool(function_declarations=declarations)] if declarations else []
 
-        # Build content list: system prompt + history + new user turn
-        contents: list[Any] = [system_prompt]
-        for msg in previous_messages or []:
-            role = msg.get("role", "user")
-            text = msg.get("content", "")
-            contents.append(Content(role=role, parts=[Part.from_text(text)]))
-        contents.append(user_prompt)
+        # Build content list: system prompt + history + new user turn.
+        # Vertex SDK rejects a list that mixes raw strings with Content
+        # objects, so when previous_messages is non-empty we wrap every item.
+        if previous_messages:
+            contents: list[Any] = [
+                Content(role="user", parts=[Part.from_text(system_prompt)])
+            ]
+            for msg in previous_messages:
+                role = msg.get("role", "user")
+                text = msg.get("content", "")
+                contents.append(
+                    Content(role=role, parts=[Part.from_text(text)])
+                )
+            contents.append(
+                Content(role="user", parts=[Part.from_text(user_prompt)])
+            )
+        else:
+            contents = [system_prompt, user_prompt]
 
         # If tools are disabled, force JSON output to ensure the model produces
         # a single parseable response (no chatty preamble).
