@@ -1,18 +1,53 @@
-"""Build the 1-page technical drawing PDF using reportlab."""
+"""Build the 1-page ISO-style technical drawing PDF using reportlab.
+
+Layout (A4 landscape feels nicer but we keep portrait so it pairs with
+the report PDF):
+
+    ┌──────────────────────────────────────────────┐
+    │  Border + zone markers (A,B,C / 1,2,3,4)      │
+    │  ┌──────────┐  ┌──────────┐                   │
+    │  │ TOP      │  │ ISO      │                   │
+    │  └──────────┘  └──────────┘                   │
+    │  ┌──────────┐  ┌──────────┐                   │
+    │  │ FRONT    │  │ SIDE     │                   │
+    │  └──────────┘  └──────────┘                   │
+    │                                                │
+    │  NOTES …                       ┌─────────────┐│
+    │                                │ TITLE BLOCK ││
+    │                                └─────────────┘│
+    └──────────────────────────────────────────────┘
+"""
 from __future__ import annotations
 
 import io
+from datetime import UTC, datetime
 
 from reportlab.lib import colors
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas as canvas_mod
 
 from services.documenter.pdf import theme
+from services.documenter.pdf.title_block import (
+    TITLE_BLOCK_HEIGHT_MM,
+    TITLE_BLOCK_WIDTH_MM,
+    derive_doc_number,
+    draw_third_angle_symbol,
+    draw_title_block,
+)
 from services.geometry.domain.artifacts import MassProperties
 from services.interpreter.domain.intent import DesignIntent
 from services.interpreter.domain.materials import MaterialProperties
 
-_PROJECT_NAME = "Gemma 4 Good Hackathon"
+_PROJECT_NAME = "Gemma 4 Good · MechDesign AI"
+
+_NOTES = [
+    "All dimensions in metres unless otherwise noted.",
+    "General tolerances per ISO 2768-m (medium).",
+    "Surface finish Ra 3.2 µm unless otherwise specified.",
+    "Material per Bill of Materials in the engineering report.",
+    "First-article inspection required before serial production.",
+    "Drawing auto-generated from natural-language intent — verify against report before fabrication.",
+]
 
 
 def build_drawing_pdf(
@@ -22,41 +57,122 @@ def build_drawing_pdf(
     intent: DesignIntent,
     material: MaterialProperties,
     now_utc_iso: str,
+    cache_key: str | None = None,
 ) -> bytes:
-    """Return PDF bytes for the 1-page technical drawing."""
+    """Return PDF bytes for the 1-page ISO-style technical drawing."""
     buf = io.BytesIO()
     c = canvas_mod.Canvas(buf, pagesize=theme.PAGE_SIZE)
     width, height = theme.PAGE_SIZE
-    c.setFillColor(colors.black)
+    doc_number = derive_doc_number(cache_key or "00000000")
 
-    _draw_view(c, "Front", views.get("front", b""), theme.MARGIN_PT,
-               height - theme.MARGIN_PT - 80 * mm, 80 * mm, 60 * mm)
-    _draw_view(c, "Side", views.get("side", b""),
-               theme.MARGIN_PT + 90 * mm,
-               height - theme.MARGIN_PT - 80 * mm, 80 * mm, 60 * mm)
-    _draw_view(c, "Iso", views.get("iso", b""),
-               theme.MARGIN_PT,
-               height - theme.MARGIN_PT - 170 * mm, 80 * mm, 80 * mm)
+    _draw_border(c, width, height)
 
-    bbox_width = mass.bbox_m[3] - mass.bbox_m[0]
-    bbox_height = mass.bbox_m[4] - mass.bbox_m[1]
-    bbox_depth = mass.bbox_m[5] - mass.bbox_m[2]
+    # View grid — 2 columns × 2 rows in the upper part of the sheet
+    grid_left = theme.MARGIN_PT + 4 * mm
+    grid_top = height - 22 * mm
+    view_w = (width - 2 * theme.MARGIN_PT - 12 * mm) / 2
+    view_h = 70 * mm
+    gap = 4 * mm
 
-    bbox_x = theme.MARGIN_PT + 90 * mm
-    bbox_y = height - theme.MARGIN_PT - 110 * mm
+    _draw_view(c, "TOP", views.get("top", b""),
+               grid_left, grid_top - view_h, view_w, view_h)
+    _draw_view(c, "ISOMETRIC", views.get("iso", b""),
+               grid_left + view_w + gap, grid_top - view_h, view_w, view_h)
+    _draw_view(c, "FRONT", views.get("front", b""),
+               grid_left, grid_top - 2 * view_h - gap, view_w, view_h)
+    _draw_view(c, "SIDE", views.get("side", b""),
+               grid_left + view_w + gap, grid_top - 2 * view_h - gap, view_w, view_h)
+
+    # Bounding box callouts (below the four-view grid)
+    bbox_w = mass.bbox_m[3] - mass.bbox_m[0]
+    bbox_h = mass.bbox_m[4] - mass.bbox_m[1]
+    bbox_d = mass.bbox_m[5] - mass.bbox_m[2]
+    callout_y = grid_top - 2 * view_h - gap - 12 * mm
+    c.setFont(*theme.FONT_LABEL)
+    c.setFillColor(theme.INK_MUTED)
+    c.drawString(grid_left, callout_y, "BOUNDING ENVELOPE")
     c.setFont(*theme.FONT_BODY)
-    c.drawString(bbox_x, bbox_y, f"Width  = {bbox_width:.3f} m")
-    c.drawString(bbox_x, bbox_y - 6 * mm, f"Height = {bbox_height:.3f} m")
-    c.drawString(bbox_x, bbox_y - 12 * mm, f"Depth  = {bbox_depth:.3f} m")
+    c.setFillColor(theme.INK)
+    c.drawString(grid_left, callout_y - 5 * mm, f"X (width)  = {bbox_w:.3f} m")
+    c.drawString(grid_left, callout_y - 10 * mm, f"Y (height) = {bbox_h:.3f} m")
+    c.drawString(grid_left, callout_y - 15 * mm, f"Z (depth)  = {bbox_d:.3f} m")
 
+    c.setFont(*theme.FONT_LABEL)
+    c.setFillColor(theme.INK_MUTED)
+    c.drawString(grid_left + 90 * mm, callout_y, "MASS PROPERTIES")
     c.setFont(*theme.FONT_BODY)
-    note = f"mass = {mass.mass_kg:.1f} kg, vol = {mass.volume_m3:.3f} m3"
-    c.drawCentredString(width / 2, theme.MARGIN_PT + 8 * mm, note)
+    c.setFillColor(theme.INK)
+    c.drawString(grid_left + 90 * mm, callout_y - 5 * mm, f"Mass    = {mass.mass_kg:.2f} kg")
+    c.drawString(grid_left + 90 * mm, callout_y - 10 * mm, f"Volume  = {mass.volume_m3:.4f} m³")
+    c.drawString(
+        grid_left + 90 * mm,
+        callout_y - 15 * mm,
+        f"COG     = ({mass.center_of_mass[0]:.2f}, {mass.center_of_mass[1]:.2f}, {mass.center_of_mass[2]:.2f})",
+    )
 
-    _draw_title_block(c, intent, material, now_utc_iso, mass)
+    # Notes (top-left of bottom band)
+    notes_x = theme.MARGIN_PT + 4 * mm
+    notes_top = 70 * mm
+    c.setFont(*theme.FONT_LABEL)
+    c.setFillColor(theme.INK_MUTED)
+    c.drawString(notes_x, notes_top, "GENERAL NOTES")
+    c.setFont(*theme.FONT_SMALL)
+    c.setFillColor(theme.INK)
+    for i, note in enumerate(_NOTES, start=1):
+        c.drawString(notes_x, notes_top - 5 * mm - (i - 1) * 4 * mm, f"{i}.  {note}")
+
+    # Third-angle symbol (right of notes)
+    sym_x = width / 2 + 10 * mm
+    sym_y = 55 * mm
+    draw_third_angle_symbol(c, sym_x, sym_y)
+
+    # Title block — bottom-right
+    tb_x = width - theme.MARGIN_PT - TITLE_BLOCK_WIDTH_MM * mm
+    tb_y = theme.MARGIN_PT
+    draw_title_block(
+        c,
+        tb_x,
+        tb_y,
+        project=_PROJECT_NAME,
+        part_name=intent.type.replace("_", " "),
+        material=material.name.replace("_", " "),
+        doc_number=doc_number,
+        revision="R1",
+        scale=f"1:{_auto_scale_denom(mass)}",
+        units="m",
+        sheet="1/1",
+        date=now_utc_iso,
+    )
 
     c.save()
     return buf.getvalue()
+
+
+def _draw_border(c: canvas_mod.Canvas, width: float, height: float) -> None:
+    """Heavy outer border + lighter inner border with zone tick marks."""
+    margin = theme.MARGIN_PT
+    inner = margin + 3 * mm
+    c.setStrokeColor(theme.INK)
+    c.setLineWidth(theme.LINE_HEAVY)
+    c.rect(margin, margin, width - 2 * margin, height - 2 * margin, stroke=1, fill=0)
+    c.setLineWidth(theme.LINE_THIN)
+    c.rect(inner, inner, width - 2 * inner, height - 2 * inner, stroke=1, fill=0)
+
+    # Zone markers — letters A,B,C,D top→bottom on left, numbers 1..6 left→right on top
+    inner_w = width - 2 * inner
+    inner_h = height - 2 * inner
+    n_cols = 6
+    n_rows = 4
+    c.setFont(*theme.FONT_LABEL)
+    c.setFillColor(theme.INK_MUTED)
+    for i in range(n_cols):
+        x = inner + inner_w * (i + 0.5) / n_cols
+        c.drawCentredString(x, height - inner + 1.5 * mm, str(i + 1))
+        c.drawCentredString(x, inner - 4 * mm, str(i + 1))
+    for j in range(n_rows):
+        y = inner + inner_h * (n_rows - 1 - j + 0.5) / n_rows
+        c.drawCentredString(inner - 3 * mm, y - 1, chr(ord("A") + j))
+        c.drawCentredString(width - inner + 3 * mm, y - 1, chr(ord("A") + j))
 
 
 def _draw_view(
@@ -68,16 +184,25 @@ def _draw_view(
     w: float,
     h: float,
 ) -> None:
-    c.setStrokeColor(colors.lightgrey)
+    # View frame
+    c.setStrokeColor(theme.INK)
+    c.setLineWidth(theme.LINE_MEDIUM)
     c.rect(x, y, w, h, stroke=1, fill=0)
-    c.setFillColor(colors.black)
-    c.setFont(*theme.FONT_H2)
-    c.drawString(x + 3, y + h - 12, label)
 
-    embedded = _try_embed_svg(c, svg_bytes, x + 4, y + 4, w - 8, h - 18)
+    # Label tab (top-left, eggplant background)
+    label_w = c.stringWidth(label, "Helvetica-Bold", 7) + 8
+    label_h = 10
+    c.setFillColor(theme.BROTEA_EGGPLANT)
+    c.rect(x, y + h - label_h, label_w, label_h, stroke=0, fill=1)
+    c.setFillColor(colors.white)
+    c.setFont(*theme.FONT_LABEL)
+    c.drawString(x + 4, y + h - 7, label)
+
+    embedded = _try_embed_svg(c, svg_bytes, x + 6, y + 6, w - 12, h - label_h - 8)
     if not embedded:
-        c.setFont(*theme.FONT_BODY)
-        c.drawCentredString(x + w / 2, y + h / 2, "[view]")
+        c.setFillColor(theme.INK_MUTED)
+        c.setFont(*theme.FONT_SMALL)
+        c.drawCentredString(x + w / 2, y + h / 2, f"[{label.lower()} view unavailable]")
 
 
 def _try_embed_svg(
@@ -105,34 +230,6 @@ def _try_embed_svg(
         return True
     except Exception:
         return False
-
-
-def _draw_title_block(
-    c: canvas_mod.Canvas,
-    intent: DesignIntent,
-    material: MaterialProperties,
-    now_utc_iso: str,
-    mass: MassProperties,
-) -> None:
-    width, _ = theme.PAGE_SIZE
-    x = width - theme.MARGIN_PT - 60 * mm
-    y = theme.MARGIN_PT
-    box_w = 60 * mm
-    box_h = 30 * mm
-    c.setStrokeColor(colors.black)
-    c.rect(x, y, box_w, box_h, stroke=1, fill=0)
-
-    c.setFont(*theme.FONT_BODY)
-    lines = [
-        f"PROJECT  {_PROJECT_NAME}",
-        f"PART     {intent.type}",
-        f"MATERIAL {material.name}",
-        f"DATE     {now_utc_iso}",
-        f"SCALE    1:{_auto_scale_denom(mass)}",
-        "UNITS    m",
-    ]
-    for i, line in enumerate(lines):
-        c.drawString(x + 2 * mm, y + box_h - (i + 1) * 4 * mm, line)
 
 
 def _auto_scale_denom(mass: MassProperties) -> int:

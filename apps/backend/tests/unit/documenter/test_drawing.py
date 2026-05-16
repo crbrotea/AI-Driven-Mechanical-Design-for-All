@@ -72,8 +72,9 @@ def test_drawing_pdf_contains_title_block_fields() -> None:
         material=_STEEL, now_utc_iso="2026-05-16T12:00:00Z",
     )
     text = _read_text(pdf)
-    assert "Flywheel_Rim" in text
-    assert "steel_a36" in text
+    # Spaces are normalized in the title block ("Flywheel_Rim" → "Flywheel Rim").
+    assert "Flywheel Rim" in text
+    assert "steel a36" in text
 
 
 def test_drawing_pdf_contains_bbox_labels() -> None:
@@ -82,9 +83,10 @@ def test_drawing_pdf_contains_bbox_labels() -> None:
         material=_STEEL, now_utc_iso="2026-05-16T12:00:00Z",
     )
     text = _read_text(pdf)
-    assert "Width" in text
-    assert "Height" in text
-    assert "Depth" in text
+    # New ISO-style callouts label axes (X/Y/Z) instead of Width/Height/Depth.
+    assert "width" in text.lower()
+    assert "height" in text.lower()
+    assert "depth" in text.lower()
 
 
 def test_drawing_pdf_contains_mass_note() -> None:
