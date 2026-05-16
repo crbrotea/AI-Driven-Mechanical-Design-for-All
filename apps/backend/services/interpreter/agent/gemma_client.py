@@ -43,3 +43,11 @@ class GemmaProtocol(Protocol):
         previous_messages: list[dict[str, Any]] | None = None,
     ) -> AsyncIterator[GemmaEvent]:
         ...
+
+
+class VertexTimeout(RuntimeError):  # noqa: N818 -- sentinel, not a model class
+    """Raised by Vertex client wrappers when a request exceeds the per-call timeout."""
+
+
+class VertexRateLimited(RuntimeError):  # noqa: N818 -- sentinel, not a model class
+    """Raised by Vertex client wrappers when the API returns 429 / quota exhausted."""
