@@ -2,7 +2,6 @@
 import { Boxes, Cog, Disc3, Eye, EyeOff, LayoutGrid, Layers, Tent, type LucideIcon, Cylinder } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { apportionMass, derivePartsFromIntent, formatDimensions, type PartSummary } from '@/lib/parts'
 import type { DesignIntent } from '@/lib/types'
