@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useUIStore } from '@/lib/stores/uiStore'
 import { Button } from '@/components/ui/button'
@@ -11,7 +12,17 @@ export function Topbar() {
 
   return (
     <header role="banner" className="flex items-center justify-between border-b border-border px-4 py-2">
-      <div className="font-semibold">MechDesign AI</div>
+      <div className="flex items-center gap-2">
+        <Image
+          src="/logo.png"
+          alt="MechDesign AI logo"
+          width={32}
+          height={32}
+          priority
+          className="rounded"
+        />
+        <span className="font-semibold">MechDesign AI</span>
+      </div>
       <nav className="flex gap-2">
         <Button
           variant="ghost"

@@ -5,6 +5,10 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'AI-Driven Mechanical Design',
   description: 'Design mechanical parts in natural language',
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
