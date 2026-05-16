@@ -39,7 +39,7 @@ def test_analysis_result_required_fields() -> None:
         intent_type="Flywheel_Rim",
         material_name="steel_a36",
         material_yield_mpa=250.0,
-        formula="σ = ρω²R²",
+        formula="sigma = rho*omega^2*R^2",
         stress_max_pa=1.0e8,
         displacement_max_m=1.0e-3,
         safety_factor=2.5,

@@ -44,7 +44,7 @@ class AnalysisError(BaseModel):
         raise AnalysisException(self)
 
 
-class AnalysisException(RuntimeError):
+class AnalysisException(RuntimeError):  # noqa: N818 -- intentional distinction from AnalysisError model
     """Raised by solvers and router internals; carries an AnalysisError payload."""
 
     def __init__(self, error: AnalysisError) -> None:
