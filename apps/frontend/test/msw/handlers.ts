@@ -81,4 +81,57 @@ export const handlers = [
     if (params.hash === 'c03a446d17fc0fd5') return HttpResponse.json(FLYWHEEL_GENERATE)
     return new HttpResponse(null, { status: 404 })
   }),
+
+  http.post('*/analyze', async () =>
+    HttpResponse.json({
+      intent_type: 'Flywheel_Rim',
+      material_name: 'steel_a36',
+      material_yield_mpa: 250,
+      formula: 'sigma = rho*omega^2*R^2 (thin-rim centrifugal)',
+      stress_max_pa: 4.84e7,
+      displacement_max_m: 6.05e-5,
+      safety_factor: 5.16,
+      verdict: 'pass',
+      inputs: { angular_velocity_rad_s: 314.16, outer_diameter_m: 0.5 },
+      notes: 'thin-rim approximation; valid when thickness << outer radius',
+    }),
+  ),
+
+  http.post('*/explain', () =>
+    new HttpResponse(
+      sseBody([
+        { event: 'progress', data: { step: 'generating' } },
+        { event: 'chunk', data: { text: 'The flywheel ' } },
+        { event: 'chunk', data: { text: 'is well below the yield limit.' } },
+        { event: 'progress', data: { step: 'parsing' } },
+        {
+          event: 'final',
+          data: {
+            report: {
+              summary: 'The flywheel is well below the yield limit.',
+              risks: ['Stress is comfortable.'],
+              suggestions: ['Inspect bearings yearly.'],
+              analogies: ['Five times stronger than needed.'],
+              facts_used: ['safety_factor', 'stress_max_mpa'],
+            },
+            cache_hit: false,
+            cache_key: 'mock-explain',
+          },
+        },
+      ]),
+      { headers: { 'Content-Type': 'text/event-stream' } },
+    ),
+  ),
+
+  http.post('*/document', async () =>
+    HttpResponse.json({
+      report_pdf_url: 'https://example.com/report.pdf',
+      drawing_pdf_url: 'https://example.com/drawing.pdf',
+      step_url: 'https://mock/step',
+      glb_url: '/mock.glb',
+      svg_url: 'https://mock/svg',
+      cache_hit: false,
+      cache_key: 'mock-doc',
+    }),
+  ),
 ]
