@@ -52,7 +52,7 @@ export function FormPanel({
 
   return (
     <section className="flex h-full flex-col border-r border-border p-4">
-      <h2 className="text-lg font-semibold">{t('title')}</h2>
+      <h2 className="font-display text-lg font-bold tracking-tight">{t('title')}</h2>
       <div className="mt-3 flex-1 space-y-3 overflow-y-auto">
         {Object.entries(intent.fields).map(([name, field]) => (
           <FieldRow

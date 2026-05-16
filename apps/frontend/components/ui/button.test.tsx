@@ -12,7 +12,7 @@ describe('Button', () => {
   it('applies variant classes', () => {
     render(<Button variant="destructive">X</Button>)
     const btn = screen.getByRole('button')
-    expect(btn.className).toContain('bg-red-600')
+    expect(btn.className).toContain('bg-danger')
   })
 
   it('forwards disabled attr', () => {

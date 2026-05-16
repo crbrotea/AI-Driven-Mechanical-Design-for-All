@@ -1,3 +1,4 @@
+import { Wrench } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export type ChatRole = 'user' | 'assistant' | 'tool_call'
@@ -14,7 +15,7 @@ export function ChatMessage({
   if (role === 'tool_call') {
     return (
       <div className="flex items-center gap-2 text-xs text-muted-foreground italic">
-        <span>🔧</span>
+        <Wrench className="h-3.5 w-3.5" aria-hidden="true" />
         <span>{toolLabel ?? content}</span>
       </div>
     )

@@ -6,11 +6,11 @@ import { Input } from '@/components/ui/input'
 import type { TriStateField } from '@/lib/types'
 
 const BORDER_BY_SOURCE: Record<TriStateField['source'], string> = {
-  extracted: 'border-green-500',
-  defaulted: 'border-blue-500',
-  missing: 'border-red-500',
-  user: 'border-purple-500',
-  invalid: 'border-yellow-500',
+  extracted: 'border-success',
+  defaulted: 'border-info',
+  missing: 'border-danger',
+  user: 'border-primary',
+  invalid: 'border-warning',
 }
 
 export function FieldRow({
@@ -40,12 +40,12 @@ export function FieldRow({
         <span className="font-medium">{name}</span>
         <span
           className={cn(
-            'rounded px-2 py-0.5 text-[10px]',
-            field.source === 'extracted' && 'bg-green-100 text-green-700',
-            field.source === 'defaulted' && 'bg-blue-100 text-blue-700',
-            field.source === 'missing' && 'bg-red-100 text-red-700',
-            field.source === 'user' && 'bg-purple-100 text-purple-700',
-            field.source === 'invalid' && 'bg-yellow-100 text-yellow-700',
+            'rounded px-2 py-0.5 text-[10px] font-medium',
+            field.source === 'extracted' && 'bg-success/15 text-success',
+            field.source === 'defaulted' && 'bg-info/15 text-info',
+            field.source === 'missing' && 'bg-danger/15 text-danger',
+            field.source === 'user' && 'bg-primary/15 text-primary',
+            field.source === 'invalid' && 'bg-warning/15 text-warning',
           )}
           title={field.reason ?? undefined}
         >
@@ -59,6 +59,7 @@ export function FieldRow({
         className={cn(BORDER_BY_SOURCE[field.source])}
         aria-label={name}
         aria-required={field.required}
+        aria-invalid={field.source === 'missing' || field.source === 'invalid'}
       />
     </div>
   )

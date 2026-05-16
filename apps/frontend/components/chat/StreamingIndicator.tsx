@@ -1,3 +1,4 @@
+import { Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { SSEEvent } from '@/lib/types'
 
@@ -13,8 +14,9 @@ export function StreamingIndicator({ events }: { events: SSEEvent[] }) {
         const args = (e.data as { args?: Record<string, unknown> }).args ?? {}
         const labelKey = `tool_calls.${tool}` as const
         return (
-          <div key={i} className="text-xs">
-            🔍 {t(labelKey, { primitive: args.name as string, material: args.name as string })}
+          <div key={i} className="flex items-center gap-1.5 text-xs">
+            <Search className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>{t(labelKey, { primitive: args.name as string, material: args.name as string })}</span>
           </div>
         )
       })}

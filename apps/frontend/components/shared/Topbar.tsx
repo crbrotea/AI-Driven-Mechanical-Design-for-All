@@ -1,5 +1,6 @@
 'use client'
 import Image from 'next/image'
+import { Moon, Sun } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useUIStore } from '@/lib/stores/uiStore'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,7 @@ export function Topbar() {
   const t = useTranslations('topbar')
   const locale = useUIStore((s) => s.locale)
   const setLocale = useUIStore((s) => s.setLocale)
+  const theme = useUIStore((s) => s.theme)
   const toggleTheme = useUIStore((s) => s.toggleTheme)
 
   return (
@@ -32,8 +34,12 @@ export function Topbar() {
         >
           {locale === 'en' ? 'ES' : 'EN'}
         </Button>
-        <Button variant="ghost" size="sm" onClick={toggleTheme} aria-label={t('theme_toggle')}>
-          🌓
+        <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label={t('theme_toggle')}>
+          {theme === 'light' ? (
+            <Moon className="h-5 w-5" aria-hidden="true" />
+          ) : (
+            <Sun className="h-5 w-5" aria-hidden="true" />
+          )}
         </Button>
       </nav>
     </header>

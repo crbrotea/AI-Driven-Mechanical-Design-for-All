@@ -23,17 +23,17 @@ export function ToastContainer() {
     }
   }, [])
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2" aria-live="polite">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2" aria-live="polite" aria-atomic="true">
       {toasts.map((t) => (
         <div
           key={t.id}
           className={
             'rounded-md px-4 py-2 text-sm shadow-lg ' +
             (t.severity === 'error'
-              ? 'bg-red-600 text-white'
+              ? 'bg-danger text-danger-foreground'
               : t.severity === 'warning'
-              ? 'bg-yellow-500 text-black'
-              : 'bg-blue-600 text-white')
+                ? 'bg-warning text-warning-foreground'
+                : 'bg-info text-info-foreground')
           }
         >
           {t.message}

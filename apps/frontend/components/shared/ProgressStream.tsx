@@ -6,9 +6,23 @@ export function ProgressStream({ events }: { events: SSEEvent[] }) {
   if (!last) return null
   const data = last.data as { step: string; pct: number; primitive?: string }
   return (
-    <div className="flex flex-col items-center gap-2 text-sm">
-      <div className="h-2 w-64 overflow-hidden rounded-full bg-muted">
-        <div className="h-full bg-primary transition-all" style={{ width: `${data.pct}%` }} />
+    <div
+      className="flex w-full max-w-xs flex-col items-center gap-2 text-sm"
+      role="status"
+      aria-live="polite"
+    >
+      <div
+        className="h-2 w-full overflow-hidden rounded-full bg-muted"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={data.pct}
+        aria-label={`Generation progress: ${data.step}`}
+      >
+        <div
+          className="h-full bg-primary transition-all motion-reduce:transition-none"
+          style={{ width: `${data.pct}%` }}
+        />
       </div>
       <div className="text-muted-foreground">
         {data.step} {data.primitive && `— ${data.primitive}`} ({data.pct}%)

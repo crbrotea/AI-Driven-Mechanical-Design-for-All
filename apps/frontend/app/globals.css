@@ -93,11 +93,15 @@
     --brotea-garnet: #330A0F;
     --brotea-bone: #F3F1EA;
 
-    /* status */
-    --success: #2BA26B;
-    --warning: #E4A126;
-    --danger: #E0443E;
-    --info: #8081FF;
+    /* status — exposed as HSL so Tailwind tokens (success, warning, danger, info) work */
+    --success: 150 58% 40%;          /* #2BA26B */
+    --success-foreground: 0 0% 100%;
+    --warning: 38 78% 52%;           /* #E4A126 */
+    --warning-foreground: 240 65% 11%;
+    --danger: 3 73% 56%;             /* #E0443E */
+    --danger-foreground: 0 0% 100%;
+    --info: 240 100% 75%;            /* brotea violet */
+    --info-foreground: 0 0% 100%;
 
     /* radii — brand signature square is 48px */
     --r-square: 48px;

@@ -33,7 +33,7 @@ export function NarrativePanel({
   return (
     <Card className="p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Engineering Narrative</h2>
+        <h2 className="font-display text-base font-bold tracking-tight">Engineering Narrative</h2>
         <Button
           size="sm"
           disabled={!ready || state === 'streaming'}
@@ -43,7 +43,7 @@ export function NarrativePanel({
         </Button>
       </div>
       {error && (
-        <div className="text-xs text-red-600">{error.message}</div>
+        <div role="alert" className="text-xs text-danger">{error.message}</div>
       )}
       {state === 'streaming' && streamedText && !report && (
         <StreamingText text={streamedText} />

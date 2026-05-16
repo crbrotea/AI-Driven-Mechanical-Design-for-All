@@ -37,7 +37,7 @@ export function DeliverablesPanel({
   return (
     <Card className="p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Deliverables</h2>
+        <h2 className="font-display text-base font-bold tracking-tight">Deliverables</h2>
         <Button
           size="sm"
           disabled={!ready || state === 'running'}
@@ -47,7 +47,7 @@ export function DeliverablesPanel({
         </Button>
       </div>
       {error && (
-        <div className="text-xs text-red-600">
+        <div role="alert" className="text-xs text-danger">
           {error.message}
           {typeof error.retry_after === 'number' && (
             <span className="ml-2 text-muted-foreground">

@@ -6,9 +6,9 @@ import { useAnalyze } from '@/lib/hooks/useAnalyze'
 import type { AnalysisResult, DesignIntent } from '@/lib/types'
 
 const VERDICT_COLOR: Record<string, string> = {
-  pass: 'bg-emerald-600',
-  warn: 'bg-amber-500',
-  fail: 'bg-red-600',
+  pass: 'bg-success text-success-foreground',
+  warn: 'bg-warning text-warning-foreground',
+  fail: 'bg-danger text-danger-foreground',
 }
 
 export interface AnalysisPanelProps {
@@ -31,7 +31,7 @@ export function AnalysisPanel({ intent, materialName, onResult }: AnalysisPanelP
   return (
     <Card className="p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Structural Analysis</h2>
+        <h2 className="font-display text-base font-bold tracking-tight">Structural Analysis</h2>
         <Button
           size="sm"
           disabled={!intent || state === 'running'}
@@ -41,7 +41,7 @@ export function AnalysisPanel({ intent, materialName, onResult }: AnalysisPanelP
         </Button>
       </div>
       {error && (
-        <div className="text-xs text-red-600">
+        <div role="alert" className="text-xs text-danger">
           {error.field && <span className="font-mono mr-1">[{error.field}]</span>}
           {error.message}
         </div>
@@ -50,8 +50,8 @@ export function AnalysisPanel({ intent, materialName, onResult }: AnalysisPanelP
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <span
-              className={`px-2 py-0.5 text-xs font-bold text-white rounded ${
-                VERDICT_COLOR[result.verdict] ?? 'bg-gray-500'
+              className={`px-2 py-0.5 text-xs font-bold rounded ${
+                VERDICT_COLOR[result.verdict] ?? 'bg-muted text-foreground'
               }`}
             >
               {result.verdict.toUpperCase()}
