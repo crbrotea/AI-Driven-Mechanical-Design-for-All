@@ -63,7 +63,40 @@
       "invalid": "Invalid"
     },
     "material": "Material",
-    "generate": "Generate geometry"
+    "generate": "Generate geometry",
+    "section_main": "Main piece",
+    "section_derived": "Companion pieces",
+    "main_badge": "edit",
+    "derived_badge": "auto",
+    "derived_hint": "Dimensions below are derived from the main piece. Adjust the main piece to change them."
+  },
+  "design": {
+    "steps": {
+      "aria_label": "Design pipeline progress",
+      "describe": { "title": "Describe", "subtitle": "Tell us what to build" },
+      "configure": { "title": "Configure", "subtitle": "Tune parameters" },
+      "build": { "title": "Build", "subtitle": "Generate 3D" },
+      "validate": { "title": "Validate", "subtitle": "Physics check" },
+      "ship": { "title": "Ship", "subtitle": "Export PDF + CAD" }
+    },
+    "parts": {
+      "aria_label": "Bill of materials",
+      "title": "System parts",
+      "count": "{count, plural, one {# part} other {# parts}}",
+      "total": "total mass",
+      "main": "main",
+      "material": "Material",
+      "hide": "Hide part",
+      "show": "Show part",
+      "empty": "Parts will appear here once you describe a design."
+    },
+    "tabs": {
+      "aria_label": "Pipeline stages",
+      "parameters": "Parameters",
+      "analysis": "Analysis",
+      "narrative": "Narrative",
+      "deliverables": "Deliverables"
+    }
   },
   "viewer": {
     "placeholder": "Your 3D design will appear here",

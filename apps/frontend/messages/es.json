@@ -63,7 +63,40 @@
       "invalid": "Inválido"
     },
     "material": "Material",
-    "generate": "Generar geometría"
+    "generate": "Generar geometría",
+    "section_main": "Pieza principal",
+    "section_derived": "Piezas acompañantes",
+    "main_badge": "editar",
+    "derived_badge": "auto",
+    "derived_hint": "Las dimensiones siguientes se derivan de la pieza principal. Ajustá la principal para cambiarlas."
+  },
+  "design": {
+    "steps": {
+      "aria_label": "Progreso del pipeline de diseño",
+      "describe": { "title": "Describir", "subtitle": "Contanos qué construir" },
+      "configure": { "title": "Configurar", "subtitle": "Ajustar parámetros" },
+      "build": { "title": "Construir", "subtitle": "Generar 3D" },
+      "validate": { "title": "Validar", "subtitle": "Chequeo físico" },
+      "ship": { "title": "Entregar", "subtitle": "Exportar PDF + CAD" }
+    },
+    "parts": {
+      "aria_label": "Lista de materiales",
+      "title": "Piezas del sistema",
+      "count": "{count, plural, one {# pieza} other {# piezas}}",
+      "total": "masa total",
+      "main": "principal",
+      "material": "Material",
+      "hide": "Ocultar pieza",
+      "show": "Mostrar pieza",
+      "empty": "Las piezas aparecerán aquí cuando describás un diseño."
+    },
+    "tabs": {
+      "aria_label": "Etapas del pipeline",
+      "parameters": "Parámetros",
+      "analysis": "Análisis",
+      "narrative": "Narrativa",
+      "deliverables": "Entregables"
+    }
   },
   "viewer": {
     "placeholder": "Tu diseño 3D aparecerá aquí",

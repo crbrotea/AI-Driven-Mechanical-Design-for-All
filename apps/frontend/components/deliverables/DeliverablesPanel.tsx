@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useDocument } from '@/lib/hooks/useDocument'
@@ -16,6 +17,7 @@ export interface DeliverablesPanelProps {
   narrative: NaturalReport | null
   geometryArtifacts: CachedArtifacts | null
   sessionId: string | null
+  onDelivered?: () => void
 }
 
 export function DeliverablesPanel({
@@ -24,9 +26,14 @@ export function DeliverablesPanel({
   narrative,
   geometryArtifacts,
   sessionId,
+  onDelivered,
 }: DeliverablesPanelProps) {
   const { state, deliverables, error, run } = useDocument()
   const ready = Boolean(intent && analysis && narrative && geometryArtifacts)
+
+  useEffect(() => {
+    if (deliverables) onDelivered?.()
+  }, [deliverables, onDelivered])
 
   const handleClick = () => {
     if (intent && analysis && narrative && geometryArtifacts) {

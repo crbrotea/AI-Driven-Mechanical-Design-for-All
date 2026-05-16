@@ -1,5 +1,5 @@
 'use client'
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { ChatPanel } from '@/components/chat/ChatPanel'
@@ -14,6 +14,9 @@ import { getOrCreateSessionId, setSessionId } from '@/lib/session-storage'
 import { AnalysisPanel } from '@/components/analysis/AnalysisPanel'
 import { NarrativePanel } from '@/components/narrative/NarrativePanel'
 import { DeliverablesPanel } from '@/components/deliverables/DeliverablesPanel'
+import { Stepper, type StepperState } from '@/components/design/Stepper'
+import { PartsBom } from '@/components/design/PartsBom'
+import { PipelineTabs, type TabDef } from '@/components/design/PipelineTabs'
 import type { AnalysisResult, DesignIntent, NaturalReport } from '@/lib/types'
 
 const ViewerPanel = dynamic(
@@ -43,9 +46,10 @@ function DesignPageInner() {
 
   const [sessionId, setSid] = useState<string | null>(null)
   const [intent, setIntent] = useState<DesignIntent | null>(null)
-  const [materialName] = useState<string>('steel_a36')
+  const [materialName, setMaterialName] = useState<string>('steel_a36')
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null)
   const [narrative, setNarrative] = useState<NaturalReport | null>(null)
+  const [hasDeliverables, setHasDeliverables] = useState(false)
   const { state: genState, start: startGen, result, events: genEvents, error: genError } =
     useGenerateStream()
   const geometryArtifacts = result
@@ -81,6 +85,25 @@ function DesignPageInner() {
 
   const hashOnlyMode = Boolean(hashParam)
   const viewerResult = result ?? cachedArtifacts
+  const totalMassKg = result?.mass_properties?.mass_kg ?? cachedArtifacts?.mass_properties?.mass_kg ?? null
+
+  const stepperState: StepperState = useMemo(
+    () => ({
+      describe: intent != null,
+      configure: intent != null && (result != null || cachedArtifacts != null),
+      build: result != null || cachedArtifacts != null,
+      validate: analysis != null,
+      ship: hasDeliverables,
+    }),
+    [intent, result, cachedArtifacts, analysis, hasDeliverables],
+  )
+
+  const tabs: TabDef[] = [
+    { key: 'parameters', available: intent != null },
+    { key: 'analysis', available: intent != null && (result != null || cachedArtifacts != null), badge: analysis?.verdict.toUpperCase() },
+    { key: 'narrative', available: analysis != null },
+    { key: 'deliverables', available: narrative != null },
+  ]
 
   // Hash-only mode: fire a toast when artifacts fail to load (404 / network)
   useEffect(() => {
@@ -89,7 +112,6 @@ function DesignPageInner() {
     }
   }, [hashOnlyMode, artifactsError])
 
-  // Hash-only mode: loading state — show spinner, not the 3-col layout
   if (hashOnlyMode && artifactsLoading && !cachedArtifacts && !artifactsError) {
     return (
       <div className="flex h-screen flex-col">
@@ -102,7 +124,6 @@ function DesignPageInner() {
     )
   }
 
-  // Hash-only mode: resolved (artifacts loaded) — show viewer only
   if (hashOnlyMode && cachedArtifacts) {
     return (
       <div className="flex h-screen flex-col">
@@ -115,51 +136,80 @@ function DesignPageInner() {
     )
   }
 
-  // Hash-only mode: error (404 or network) — fall through to 3-col layout with toast already fired above
-
   return (
     <div className="flex h-screen flex-col">
       <Topbar />
-      <main className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[30%_20%_50%]">
+      <Stepper state={stepperState} />
+      <main className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[280px_minmax(0,1fr)_320px]">
         <ChatPanel
           sessionId={sessionId}
           initialPrompt={initialPrompt}
           onIntentReady={(i) => setIntent(i as DesignIntent)}
         />
-        <FormPanel sessionId={sessionId} overrideIntent={intent} onGenerate={onGenerate} />
-        <div className="relative flex flex-col overflow-y-auto">
-          {genState === 'generating' && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
-              <ProgressStream events={genEvents} />
-            </div>
-          )}
-          {genError && (
-            <div className="p-4">
-              <ErrorBanner error={genError} onRetry={() => intent && onGenerate(intent, 'steel_a36')} />
-            </div>
-          )}
-          <ViewerPanel result={viewerResult} />
-          <div className="space-y-3 p-3">
-            <AnalysisPanel
-              intent={intent}
-              materialName={materialName}
-              onResult={setAnalysis}
-            />
-            <NarrativePanel
-              intent={intent}
-              analysis={analysis}
-              sessionId={sessionId}
-              onReport={setNarrative}
-            />
-            <DeliverablesPanel
-              intent={intent}
-              analysis={analysis}
-              narrative={narrative}
-              geometryArtifacts={geometryArtifacts}
-              sessionId={sessionId}
-            />
+        <div className="relative flex flex-col overflow-hidden">
+          <div className="relative flex-1 min-h-0">
+            {genState === 'generating' && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
+                <ProgressStream events={genEvents} />
+              </div>
+            )}
+            {genError && (
+              <div className="absolute inset-x-4 top-4 z-10">
+                <ErrorBanner error={genError} onRetry={() => intent && onGenerate(intent, materialName)} />
+              </div>
+            )}
+            <ViewerPanel result={viewerResult} />
+          </div>
+          <div className="h-[42%] min-h-[280px] shrink-0 border-t border-border bg-background">
+            <PipelineTabs tabs={tabs} defaultTab="parameters">
+              {(active) => {
+                if (active === 'parameters') {
+                  return (
+                    <FormPanel
+                      sessionId={sessionId}
+                      overrideIntent={intent}
+                      onGenerate={onGenerate}
+                      onMaterialChange={setMaterialName}
+                    />
+                  )
+                }
+                if (active === 'analysis') {
+                  return (
+                    <AnalysisPanel
+                      intent={intent}
+                      materialName={materialName}
+                      onResult={setAnalysis}
+                    />
+                  )
+                }
+                if (active === 'narrative') {
+                  return (
+                    <NarrativePanel
+                      intent={intent}
+                      analysis={analysis}
+                      sessionId={sessionId}
+                      onReport={setNarrative}
+                    />
+                  )
+                }
+                if (active === 'deliverables') {
+                  return (
+                    <DeliverablesPanel
+                      intent={intent}
+                      analysis={analysis}
+                      narrative={narrative}
+                      geometryArtifacts={geometryArtifacts}
+                      sessionId={sessionId}
+                      onDelivered={() => setHasDeliverables(true)}
+                    />
+                  )
+                }
+                return null
+              }}
+            </PipelineTabs>
           </div>
         </div>
+        <PartsBom intent={intent} materialName={materialName} totalMassKg={totalMassKg} />
       </main>
       <ToastContainer />
     </div>
