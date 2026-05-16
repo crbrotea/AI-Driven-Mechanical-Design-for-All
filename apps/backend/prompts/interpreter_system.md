@@ -79,7 +79,7 @@ Expected output (after tool calls):
     "inner_diameter_m": {"value": null, "source": "missing", "required": true},
     "thickness_m": {"value": null, "source": "missing", "required": true}
   },
-  "composed_of": []
+  "composed_of": ["Shaft", "Bearing_Housing"]
 }
 ```
 
