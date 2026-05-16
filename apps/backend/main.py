@@ -68,3 +68,24 @@ app.state.geometry_cache_breaker = DegradedModeBreaker(
 from services.physics.api.router import register_physics_router  # noqa: E402
 
 register_physics_router(app)
+
+# --- Wire S4 Explainer ---
+from services.explainer.api.router import register_explainer_router  # noqa: E402
+from services.explainer.cache import ExplainerCache  # noqa: E402
+from services.explainer.generator import Explainer  # noqa: E402
+from services.explainer.prompt import load_system_prompt  # noqa: E402
+
+_explainer_gemma = VertexGemmaClient(
+    project_id=settings.gcp_project_id,
+    region=settings.gcp_region,
+    model_name=settings.vertex_ai_endpoint,
+    temperature=0.3,
+    max_output_tokens=2048,
+)
+_explainer = Explainer(
+    gemma=_explainer_gemma,
+    cache=ExplainerCache(),
+    system_prompt=load_system_prompt(BACKEND_ROOT / "prompts"),
+)
+app.state.explainer = _explainer
+register_explainer_router(app)
