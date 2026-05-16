@@ -11,7 +11,10 @@ import { ErrorBanner } from '@/components/shared/ErrorBanner'
 import { useGenerateStream } from '@/lib/hooks/useGenerateStream'
 import { useArtifacts } from '@/lib/hooks/useArtifacts'
 import { getOrCreateSessionId, setSessionId } from '@/lib/session-storage'
-import type { DesignIntent } from '@/lib/types'
+import { AnalysisPanel } from '@/components/analysis/AnalysisPanel'
+import { NarrativePanel } from '@/components/narrative/NarrativePanel'
+import { DeliverablesPanel } from '@/components/deliverables/DeliverablesPanel'
+import type { AnalysisResult, DesignIntent, NaturalReport } from '@/lib/types'
 
 const ViewerPanel = dynamic(
   () => import('@/components/viewer/ViewerPanel').then((m) => m.ViewerPanel),
@@ -40,8 +43,19 @@ function DesignPageInner() {
 
   const [sessionId, setSid] = useState<string | null>(null)
   const [intent, setIntent] = useState<DesignIntent | null>(null)
+  const [materialName] = useState<string>('steel_a36')
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null)
+  const [narrative, setNarrative] = useState<NaturalReport | null>(null)
   const { state: genState, start: startGen, result, events: genEvents, error: genError } =
     useGenerateStream()
+  const geometryArtifacts = result
+    ? {
+        mass_properties: result.mass_properties,
+        step_url: result.artifacts.step_url,
+        glb_url: result.artifacts.glb_url,
+        svg_url: result.artifacts.svg_url,
+      }
+    : null
   const { artifacts: cachedArtifacts, error: artifactsError, isLoading: artifactsLoading } =
     useArtifacts(hashParam)
 
@@ -113,7 +127,7 @@ function DesignPageInner() {
           onIntentReady={(i) => setIntent(i as DesignIntent)}
         />
         <FormPanel sessionId={sessionId} overrideIntent={intent} onGenerate={onGenerate} />
-        <div className="relative flex flex-col">
+        <div className="relative flex flex-col overflow-y-auto">
           {genState === 'generating' && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
               <ProgressStream events={genEvents} />
@@ -125,6 +139,26 @@ function DesignPageInner() {
             </div>
           )}
           <ViewerPanel result={viewerResult} />
+          <div className="space-y-3 p-3">
+            <AnalysisPanel
+              intent={intent}
+              materialName={materialName}
+              onResult={setAnalysis}
+            />
+            <NarrativePanel
+              intent={intent}
+              analysis={analysis}
+              sessionId={sessionId}
+              onReport={setNarrative}
+            />
+            <DeliverablesPanel
+              intent={intent}
+              analysis={analysis}
+              narrative={narrative}
+              geometryArtifacts={geometryArtifacts}
+              sessionId={sessionId}
+            />
+          </div>
         </div>
       </main>
       <ToastContainer />
