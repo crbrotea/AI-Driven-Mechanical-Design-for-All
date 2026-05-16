@@ -11,8 +11,8 @@ Implementation status (commits live on `master`):
 - **S2 Geometry** — implemented in `apps/backend/services/geometry/` (9 primitives, composer, 4 exporters, GCS cache + fallback, SSE router, 93 tests, 92% coverage)
 - **S3 Physics** — implemented in `apps/backend/services/physics/` (analytical-only sync `POST /analyze`; CalculiX/gmsh deferred). 3 hero solvers + registry + 45 tests + 94.96% coverage. Spec `docs/superpowers/specs/2026-05-16-s3-physics-design.md`, plan `docs/superpowers/plans/2026-05-16-s3-physics.md`.
 - **S4 Explainer** — implemented in `apps/backend/services/explainer/` (English-only Gemma 4 grounded JSON via `POST /explain` SSE; in-memory cache; reuses S1 `VertexGemmaClient` with temp=0.3). FACTS-table anti-fabrication contract + retry-once on malformed JSON. 47 tests + 94.90% coverage. Spec `docs/superpowers/specs/2026-05-16-s4-explainer-design.md`, plan `docs/superpowers/plans/2026-05-16-s4-explainer.md`.
+- **S5 Documenter** — implemented in `apps/backend/services/documenter/` (sync `POST /document` returns `Deliverables {report_pdf_url, drawing_pdf_url, step_url, glb_url, svg_url}`). 5-page engineering report + 1-page technical drawing via reportlab, build123d view projections, GCS upload under `documents/{cache_key}/` prefix with 24 h signed URLs, in-memory cache. 55 tests + 89.41% coverage. Spec `docs/superpowers/specs/2026-05-16-s5-documenter-design.md`, plan `docs/superpowers/plans/2026-05-16-s5-documenter.md`.
 - **Frontend** — `apps/frontend/` with viewer, locale toggle, `useGenerateStream`/`useArtifacts` hooks, `/design` route
-- **S5 Documenter** — not yet started
 
 Before touching a subsystem read its spec in `docs/superpowers/specs/` and the matching plan in `docs/superpowers/plans/` if it exists.
 
