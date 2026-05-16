@@ -10,6 +10,7 @@ import { ProgressStream } from '@/components/shared/ProgressStream'
 import { ErrorBanner } from '@/components/shared/ErrorBanner'
 import { useGenerateStream } from '@/lib/hooks/useGenerateStream'
 import { useArtifacts } from '@/lib/hooks/useArtifacts'
+import { useIntent } from '@/lib/hooks/useIntent'
 import { getOrCreateSessionId, setSessionId } from '@/lib/session-storage'
 import { AnalysisPanel } from '@/components/analysis/AnalysisPanel'
 import { NarrativePanel } from '@/components/narrative/NarrativePanel'
@@ -45,7 +46,9 @@ function DesignPageInner() {
   const sidParam = params.get('session_id')
 
   const [sessionId, setSid] = useState<string | null>(null)
-  const [intent, setIntent] = useState<DesignIntent | null>(null)
+  const [chatIntent, setChatIntent] = useState<DesignIntent | null>(null)
+  const { intent: sessionIntent } = useIntent(sessionId)
+  const intent = chatIntent ?? sessionIntent
   const [materialName, setMaterialName] = useState<string>('steel_a36')
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null)
   const [narrative, setNarrative] = useState<NaturalReport | null>(null)
@@ -144,7 +147,7 @@ function DesignPageInner() {
         <ChatPanel
           sessionId={sessionId}
           initialPrompt={initialPrompt}
-          onIntentReady={(i) => setIntent(i as DesignIntent)}
+          onIntentReady={(i) => setChatIntent(i as DesignIntent)}
         />
         <div className="relative flex flex-col overflow-hidden">
           <div className="relative flex-1 min-h-0">
