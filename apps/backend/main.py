@@ -63,3 +63,8 @@ app.state.geometry_cache_breaker = DegradedModeBreaker(
     failure_threshold=settings.degraded_mode_failure_threshold,
     duration_seconds=settings.degraded_mode_duration_seconds,
 )
+
+# --- Wire S3 Physics ---
+from services.physics.api.router import register_physics_router  # noqa: E402
+
+register_physics_router(app)
