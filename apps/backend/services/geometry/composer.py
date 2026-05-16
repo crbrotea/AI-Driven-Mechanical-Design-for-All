@@ -1,6 +1,8 @@
 """Composer — orchestrates primitive builders and composition rules."""
 from __future__ import annotations
 
+import inspect
+from collections.abc import Callable
 from typing import Any
 
 from build123d import Compound, Part, ShapeList
@@ -11,12 +13,23 @@ from services.geometry.domain.errors import GeometryError, GeometryErrorCode
 from services.interpreter.domain.intent import DesignIntent, FieldSource
 
 
+def _builder_args(builder: Callable[..., Any], fields: dict[str, Any]) -> dict[str, Any]:
+    """Filter `fields` down to the kwargs the builder actually accepts.
+
+    Intent fields can carry analysis-only data (e.g. head_m, flow_m3_s on a
+    Pelton runner) that the geometry builder does not consume. Splatting the
+    full dict would raise TypeError on the unknown kwargs.
+    """
+    accepted = set(inspect.signature(builder).parameters)
+    return {k: v for k, v in fields.items() if k in accepted}
+
+
 def compose_assembly(intent: DesignIntent) -> Compound:
     """Build main primitive + composed primitives, then fuse them."""
     main_fields = _extract_numeric_values(intent.fields)
     main_builder = get_builder(intent.type)
     try:
-        main_part: Part = main_builder(**main_fields)
+        main_part: Part = main_builder(**_builder_args(main_builder, main_fields))
     except (ValueError, TypeError) as e:
         GeometryError(
             code=GeometryErrorCode.PARAMETER_OUT_OF_RANGE,
@@ -41,7 +54,9 @@ def compose_assembly(intent: DesignIntent) -> Compound:
         composed_fields = rule(main_fields)  # type: ignore[misc]
         composed_builder = get_builder(composed_name)
         try:
-            composed_part: Part = composed_builder(**composed_fields)
+            composed_part: Part = composed_builder(
+                **_builder_args(composed_builder, composed_fields)
+            )
         except (ValueError, TypeError) as e:
             GeometryError(
                 code=GeometryErrorCode.PARAMETER_OUT_OF_RANGE,
