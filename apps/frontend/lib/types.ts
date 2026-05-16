@@ -72,7 +72,14 @@ export type SSEEvent =
   | { event: 'tool_call'; data: { tool: string; args?: Record<string, unknown>; reason?: string } }
   | { event: 'partial_intent'; data: Partial<DesignIntent> }
   | { event: 'progress'; data: { step: string; pct: number; primitive?: string; message?: string } }
-  | { event: 'final'; data: GenerateResponse | { session_id: string; intent: DesignIntent; language: 'es' | 'en' } }
+  | { event: 'chunk'; data: { text: string } }
+  | {
+      event: 'final'
+      data:
+        | GenerateResponse
+        | { session_id: string; intent: DesignIntent; language: 'es' | 'en' }
+        | { report: NaturalReport; cache_hit: boolean; cache_key: string }
+    }
   | { event: 'error'; data: BackendError }
 
 export interface AnalysisResult {

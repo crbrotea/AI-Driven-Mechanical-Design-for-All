@@ -32,7 +32,7 @@ export function useGenerateStream() {
             setState('error')
             return
           }
-          if (ev.event === 'final' && 'cache_hit' in ev.data) {
+          if (ev.event === 'final' && 'intent_hash' in ev.data) {
             setResult(ev.data)
           }
         }
