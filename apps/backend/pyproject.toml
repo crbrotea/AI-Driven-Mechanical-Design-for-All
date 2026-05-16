@@ -48,3 +48,7 @@ strict = true
 python_version = "3.11"
 mypy_path = "."
 packages = ["services"]
+
+[[tool.mypy.overrides]]
+module = ["reportlab.*"]
+ignore_missing_imports = true
