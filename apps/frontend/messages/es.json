@@ -1,14 +1,44 @@
 {
   "landing": {
     "hero": {
+      "eyebrow": "Gemma 4 Good · Pipeline de 5 etapas",
       "headline": "Diseñá piezas mecánicas en lenguaje natural",
-      "subline": "CAD impulsado por IA, sin necesidad de ser ingeniero",
-      "cta": "Empezar a diseñar"
+      "subline": "Describí un volante de inercia, un generador hidroeléctrico o un refugio plegable — recibí un modelo 3D físicamente validado en segundos. Sin necesidad de ser ingeniero.",
+      "cta": "Empezar a diseñar",
+      "cta_secondary": "Probá el preset volante"
+    },
+    "pipeline": {
+      "title": "Cómo funciona",
+      "subtitle": "Cinco servicios hexagonales, reemplazables independientemente, todos sobre Gemma 4.",
+      "steps": {
+        "interpret": { "title": "Interpretar", "subtitle": "Lenguaje natural → intención estructurada" },
+        "geometry": { "title": "Geometría", "subtitle": "3D paramétrico con build123d" },
+        "physics": { "title": "Física", "subtitle": "Tensión analítica, factor de seguridad" },
+        "explain": { "title": "Explicar", "subtitle": "Narrativa de ingeniería fundamentada" },
+        "document": { "title": "Documentar", "subtitle": "Informe PDF + STEP + GLB" }
+      }
+    },
+    "demos": {
+      "title": "Demos destacados",
+      "subtitle": "Tres diseños insignia, validados de punta a punta."
     },
     "heroes": {
       "flywheel": { "title": "Volante de Inercia", "subtitle": "Almacená 500 kJ de energía cinética" },
       "hydro": { "title": "Generador Hidroeléctrico", "subtitle": "Flujo 5 m³/s, caída 20m" },
       "shelter": { "title": "Refugio Plegable", "subtitle": "Para 4 personas, viento 100 km/h" }
+    },
+    "proof": {
+      "title": "Construido sobre ingeniería real",
+      "items": {
+        "formulas": "Validado por fórmulas analíticas (≤5% de error vs FEA)",
+        "exports": "Exporta STEP, GLB, SVG y un informe de ingeniería de 5 páginas",
+        "materials": "Catálogo de 7 materiales curados (acero, titanio, bambú…)"
+      }
+    },
+    "footer": {
+      "title": "¿Listo para diseñar?",
+      "subtitle": "Empezá con una frase. Terminá con un archivo STEP.",
+      "cta": "Empezar a diseñar"
     }
   },
   "chat": {

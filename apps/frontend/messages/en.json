@@ -1,14 +1,44 @@
 {
   "landing": {
     "hero": {
+      "eyebrow": "Gemma 4 Good · 5-stage pipeline",
       "headline": "Design mechanical parts in natural language",
-      "subline": "AI-driven CAD for everyone, no engineering degree required",
-      "cta": "Start designing"
+      "subline": "Describe a flywheel, a hydroelectric generator, or a foldable shelter — get a physically validated 3D model in seconds. No engineering degree required.",
+      "cta": "Start designing",
+      "cta_secondary": "Try the flywheel preset"
+    },
+    "pipeline": {
+      "title": "How it works",
+      "subtitle": "Five hexagonal services, replaceable independently, all running on Gemma 4.",
+      "steps": {
+        "interpret": { "title": "Interpret", "subtitle": "Natural language → structured intent" },
+        "geometry": { "title": "Geometry", "subtitle": "Parametric 3D via build123d" },
+        "physics": { "title": "Physics", "subtitle": "Analytical stress, safety factor" },
+        "explain": { "title": "Explain", "subtitle": "Grounded engineering narrative" },
+        "document": { "title": "Document", "subtitle": "PDF report + STEP + GLB" }
+      }
+    },
+    "demos": {
+      "title": "Hero demos",
+      "subtitle": "Three flagship designs, validated end-to-end."
     },
     "heroes": {
       "flywheel": { "title": "Energy Flywheel", "subtitle": "Store 500 kJ of kinetic energy" },
       "hydro": { "title": "Hydro Generator", "subtitle": "5 m³/s flow, 20m head" },
       "shelter": { "title": "Foldable Shelter", "subtitle": "For 4 people, 100 km/h winds" }
+    },
+    "proof": {
+      "title": "Built on real engineering",
+      "items": {
+        "formulas": "Validated by analytical formulas (≤5% error vs FEA)",
+        "exports": "Exports STEP, GLB, SVG and a 5-page engineering report",
+        "materials": "Catalog of 7 curated materials (steel, titanium, bamboo…)"
+      }
+    },
+    "footer": {
+      "title": "Ready to design?",
+      "subtitle": "Start with a sentence. Ship with a STEP file.",
+      "cta": "Start designing"
     }
   },
   "chat": {
