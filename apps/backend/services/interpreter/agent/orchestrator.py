@@ -144,11 +144,15 @@ class Orchestrator:
         if corrective_context:
             system = f"{system}\n\n## Correction\n{corrective_context}"
 
+        # Hackathon note: tools temporarily disabled because Gemini 2.5 Flash
+        # refuses to design with the current generic tool surface (the agent
+        # loop is single-shot and cannot feed tool_results back to the model).
+        # Direct JSON output works via the system prompt's Output Contract.
         final_json: dict[str, Any] | None = None
         async for ev in self._gemma.generate(
             system_prompt=system,
             user_prompt=user_prompt,
-            tools=_TOOL_SCHEMAS,
+            tools=[],
             previous_messages=previous_messages,
         ):
             collected.append(ev)

@@ -78,7 +78,9 @@ class GcsGeometryCache:
 
     def _ensure_signing_credentials(self) -> tuple[str | None, str | None]:
         """Lazily resolve ADC credentials and refresh access token."""
-        credentials, _ = google.auth.default()
+        credentials, _ = google.auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"]
+        )
         if not hasattr(credentials, "service_account_email"):
             # Local dev with user credentials — generate_signed_url will use
             # whatever is available; may fail gracefully.

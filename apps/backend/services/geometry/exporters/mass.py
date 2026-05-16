@@ -13,7 +13,12 @@ def compute_mass_properties(
 ) -> MassProperties:
     """Compute SI mass properties from a build123d Part/Compound."""
     # build123d internal unit is mm; volume is mm³
+    # build123d 0.10 Compound.volume returns 0 when wrapping Parts from
+    # boolean operations. Fall back to summing children's volumes.
     volume_mm3 = part.volume
+    if volume_mm3 == 0 and hasattr(part, "children"):
+        children = list(part.children)
+        volume_mm3 = sum(getattr(c, "volume", 0.0) for c in children)
     volume_m3 = volume_mm3 * 1e-9
     mass_kg = volume_m3 * material.density_kg_m3
 

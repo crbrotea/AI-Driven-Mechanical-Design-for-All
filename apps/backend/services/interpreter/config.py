@@ -6,13 +6,29 @@ from typing import Any, ClassVar
 from pydantic import Field, field_validator
 from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings.sources.providers.dotenv import DotEnvSettingsSource
 from pydantic_settings.sources.providers.env import EnvSettingsSource
+
+
+_CSV_FIELDS: frozenset[str] = frozenset({"cors_allowed_origins"})
+
+
+def _prepare_csv_value(
+    field_name: str,
+    field: FieldInfo,
+    value: Any,
+    value_is_complex: bool,
+    parent_prepare: Any,
+) -> Any:
+    if field_name in _CSV_FIELDS and isinstance(value, str):
+        return [origin.strip() for origin in value.split(",") if origin.strip()]
+    return parent_prepare(field_name, field, value, value_is_complex)
 
 
 class _CsvEnvSource(EnvSettingsSource):
     """Env source that parses comma-separated strings into list[str] fields."""
 
-    _CSV_FIELDS: ClassVar[frozenset[str]] = frozenset({"cors_allowed_origins"})
+    _CSV_FIELDS: ClassVar[frozenset[str]] = _CSV_FIELDS
 
     def prepare_field_value(
         self,
@@ -21,9 +37,24 @@ class _CsvEnvSource(EnvSettingsSource):
         value: Any,
         value_is_complex: bool,
     ) -> Any:
-        if field_name in self._CSV_FIELDS and isinstance(value, str):
-            return [origin.strip() for origin in value.split(",") if origin.strip()]
-        return super().prepare_field_value(field_name, field, value, value_is_complex)
+        return _prepare_csv_value(
+            field_name, field, value, value_is_complex, super().prepare_field_value
+        )
+
+
+class _CsvDotEnvSource(DotEnvSettingsSource):
+    """DotEnv source that parses comma-separated strings into list[str] fields."""
+
+    def prepare_field_value(
+        self,
+        field_name: str,
+        field: FieldInfo,
+        value: Any,
+        value_is_complex: bool,
+    ) -> Any:
+        return _prepare_csv_value(
+            field_name, field, value, value_is_complex, super().prepare_field_value
+        )
 
 
 class Settings(BaseSettings):
@@ -87,7 +118,11 @@ class Settings(BaseSettings):
             dotenv_settings=dotenv_settings,
             file_secret_settings=file_secret_settings,
         )
-        return tuple(
-            _CsvEnvSource(settings_cls) if isinstance(s, EnvSettingsSource) else s
-            for s in sources
-        )
+        def _wrap(s: Any) -> Any:
+            if isinstance(s, DotEnvSettingsSource):
+                return _CsvDotEnvSource(settings_cls)
+            if isinstance(s, EnvSettingsSource):
+                return _CsvEnvSource(settings_cls)
+            return s
+
+        return tuple(_wrap(s) for s in sources)

@@ -81,6 +81,7 @@ _explainer_gemma = VertexGemmaClient(
     model_name=settings.vertex_ai_endpoint,
     temperature=0.3,
     max_output_tokens=2048,
+    timeout_seconds=settings.gemma_timeout_seconds,
 )
 _explainer = Explainer(
     gemma=_explainer_gemma,

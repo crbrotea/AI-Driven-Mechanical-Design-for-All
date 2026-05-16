@@ -63,15 +63,21 @@ class VertexGemmaClient:
             contents.append(Content(role=role, parts=[Part.from_text(text)]))
         contents.append(user_prompt)
 
+        # If tools are disabled, force JSON output to ensure the model produces
+        # a single parseable response (no chatty preamble).
+        gen_config: dict[str, Any] = {
+            "temperature": self._temperature,
+            "max_output_tokens": self._max_output_tokens,
+        }
+        if not vertex_tools:
+            gen_config["response_mime_type"] = "application/json"
+
         try:
             stream = await asyncio.wait_for(
                 self._model.generate_content_async(
                     contents,
                     tools=vertex_tools or None,
-                    generation_config={
-                        "temperature": self._temperature,
-                        "max_output_tokens": self._max_output_tokens,
-                    },
+                    generation_config=gen_config,
                     stream=True,
                 ),
                 timeout=self._timeout_s,
@@ -109,6 +115,9 @@ class VertexGemmaClient:
             ).raise_as()
             return
 
+        # Accumulate text chunks across the stream so we can JSON-parse once
+        # at the end. Tool calls emit immediately (one per part).
+        accumulated_text = ""
         async for chunk in stream:
             for candidate in chunk.candidates:
                 for part in candidate.content.parts:
@@ -121,14 +130,18 @@ class VertexGemmaClient:
                             ),
                         )
                     elif hasattr(part, "text") and part.text:
-                        try:
-                            parsed: dict[str, Any] = json.loads(part.text)
-                            yield GemmaEvent(kind="final_json", final_json=parsed)
-                        except json.JSONDecodeError:
-                            yield GemmaEvent(
-                                kind="error",
-                                error_message=f"Non-JSON final content: {part.text[:100]}",
-                            )
+                        accumulated_text += part.text
+
+        if accumulated_text.strip():
+            cleaned = _strip_codefence(accumulated_text)
+            try:
+                parsed: dict[str, Any] = json.loads(cleaned)
+                yield GemmaEvent(kind="final_json", final_json=parsed)
+            except json.JSONDecodeError:
+                yield GemmaEvent(
+                    kind="error",
+                    error_message=f"Non-JSON final content: {accumulated_text[:200]}",
+                )
 
     async def generate_text_streaming(
         self,
@@ -166,3 +179,15 @@ class VertexGemmaClient:
                     text = getattr(part, "text", "")
                     if text:
                         yield text
+
+
+def _strip_codefence(text: str) -> str:
+    """Remove ```json ... ``` wrappers some Gemini models emit around JSON."""
+    s = text.strip()
+    if s.startswith("```"):
+        s = s.split("\n", 1)[1] if "\n" in s else s
+    if s.startswith("json\n"):
+        s = s[5:]
+    if s.endswith("```"):
+        s = s.rsplit("```", 1)[0]
+    return s.strip()
