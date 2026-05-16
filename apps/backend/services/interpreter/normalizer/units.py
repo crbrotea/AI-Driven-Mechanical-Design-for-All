@@ -16,6 +16,10 @@ from services.interpreter.domain.errors import (
 )
 
 _UREG: pint.UnitRegistry[pint.util.UnitsContainer] = pint.UnitRegistry()
+# Engineering aliases — pint defaults to case-sensitive symbols, so user-facing
+# variants like "RPM" / "Rpm" fail without these.
+_UREG.define("RPM = revolutions_per_minute")
+_UREG.define("Rpm = revolutions_per_minute")
 
 # Mapping of canonical SI base units used as the output unit_si string.
 # Simple (single-unit) lookup by first token.
