@@ -6,11 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Hackathon submission** — "Gemma 4 Good", deadline **2026-05-18 18:00**. Scoring weights: 40 Impact/Vision + 30 Storytelling + 30 Technical Depth.
 
-The repo is currently **plan-stage**: no source code has been committed yet. Only design documents exist:
-- `DESIGN.md` — system-wide architecture, infra, roadmap, deliverables
-- `docs/superpowers/specs/` — per-subsystem design specs (S1 interpreter approved)
+Implementation status (commits live on `master`):
+- **S1 Interpreter** — implemented in `apps/backend/services/interpreter/` (full agent loop, normalizer, session store, SSE router)
+- **S2 Geometry** — implemented in `apps/backend/services/geometry/` (9 primitives, composer, 4 exporters, GCS cache + fallback, SSE router, 93 tests, 92% coverage)
+- **S3 Physics** — implemented in `apps/backend/services/physics/` (analytical-only sync `POST /analyze`; CalculiX/gmsh deferred). 3 hero solvers + registry + 45 tests + 94.96% coverage. Spec `docs/superpowers/specs/2026-05-16-s3-physics-design.md`, plan `docs/superpowers/plans/2026-05-16-s3-physics.md`.
+- **Frontend** — `apps/frontend/` with viewer, locale toggle, `useGenerateStream`/`useArtifacts` hooks, `/design` route
+- **S4 Explainer**, **S5 Documenter** — not yet started
 
-Before adding code, read `DESIGN.md` for the big picture and any matching spec in `docs/superpowers/specs/` for the subsystem being implemented.
+Before touching a subsystem read its spec in `docs/superpowers/specs/` and the matching plan in `docs/superpowers/plans/` if it exists.
 
 ## Core Mental Model: 5 Subsystems
 
