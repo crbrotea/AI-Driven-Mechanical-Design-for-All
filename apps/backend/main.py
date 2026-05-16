@@ -89,3 +89,24 @@ _explainer = Explainer(
 )
 app.state.explainer = _explainer
 register_explainer_router(app)
+
+# --- Wire S5 Documenter ---
+from services.documenter.api.router import register_documenter_router  # noqa: E402
+from services.documenter.cache import DocumenterCache  # noqa: E402
+from services.documenter.pipeline import Documenter  # noqa: E402
+from services.documenter.storage import DocumentStorage  # noqa: E402
+from services.documenter.svg_fetcher import HttpxSvgFetcher  # noqa: E402
+
+_document_storage = DocumentStorage(
+    gcs_client=_gcs_client,
+    bucket_name=settings.gcs_bucket_artifacts,
+    ttl_hours=settings.signed_url_ttl_hours,
+)
+_documenter = Documenter(
+    storage=_document_storage,
+    cache=DocumenterCache(),
+    materials_catalog=_materials_catalog,
+    svg_fetcher=HttpxSvgFetcher(timeout_s=5.0),
+)
+app.state.documenter = _documenter
+register_documenter_router(app)
