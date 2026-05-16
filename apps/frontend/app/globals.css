@@ -2,23 +2,135 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =============================================================
+   Brotea — fonts (served from /public/fonts)
+   ============================================================= */
+
+@font-face {
+  font-family: 'PP Neue Machina';
+  src: url('/fonts/PPNeueMachina-PlainLight.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PP Neue Machina';
+  src: url('/fonts/PPNeueMachina-PlainRegular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PP Neue Machina';
+  src: url('/fonts/PPNeueMachina-PlainRegularItalic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PP Neue Machina';
+  src: url('/fonts/PPNeueMachina-PlainUltrabold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PP Neue Machina Inktrap';
+  src: url('/fonts/PPNeueMachina-InktrapLight.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PP Neue Machina Inktrap';
+  src: url('/fonts/PPNeueMachina-InktrapRegular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'PP Neue Machina Inktrap';
+  src: url('/fonts/PPNeueMachina-InktrapUltrabold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Biform Pixel';
+  src: url('/fonts/biform_pixel.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =============================================================
+   Brotea tokens — HSL channels for Tailwind shadcn-style theming.
+   Hex equivalents are noted next to each token.
+   ============================================================= */
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --border: 214 32% 91%;
+    /* surfaces */
+    --background: 45 36% 93%;       /* #F3F1EA bone */
+    --foreground: 240 65% 11%;      /* #09092D eggplant */
+    --muted: 41 28% 92%;            /* #F1EEE5 n-100 */
+    --muted-foreground: 47 5% 35%;  /* #5F5D55 n-500 */
+    --border: 36 19% 85%;           /* #E0DCD1 n-200 */
+    --primary: 240 100% 75%;        /* #8081FF electric violet */
+    --primary-foreground: 0 0% 100%;
+
+    /* brand accents (kept as raw hex too for utility use) */
+    --brotea-violet: #8081FF;
+    --brotea-violet-soft: #B3B4FF;
+    --brotea-violet-deep: #5F60D9;
+    --brotea-glow: #E6FFA9;
+    --brotea-glow-soft: #F0FFCC;
+    --brotea-glow-deep: #CDE88B;
+    --brotea-pink: #FA699F;
+    --brotea-pink-deep: #E24E87;
+    --brotea-eggplant: #09092D;
+    --brotea-green: #022922;
+    --brotea-garnet: #330A0F;
+    --brotea-bone: #F3F1EA;
+
+    /* status */
+    --success: #2BA26B;
+    --warning: #E4A126;
+    --danger: #E0443E;
+    --info: #8081FF;
+
+    /* radii — brand signature square is 48px */
+    --r-square: 48px;
   }
+
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --border: 217 33% 17%;
+    --background: 240 65% 11%;      /* eggplant ground */
+    --foreground: 45 36% 93%;       /* bone text */
+    --muted: 50 6% 16%;             /* #2B2A25 n-700 */
+    --muted-foreground: 45 16% 78%; /* lighter bone */
+    --border: 240 30% 22%;          /* eggplant-tinted */
+    --primary: 240 100% 75%;        /* violet stays */
+    --primary-foreground: 240 65% 11%;
+  }
+}
+
+@layer base {
+  html, body {
+    font-family: 'PP Neue Machina', ui-sans-serif, system-ui, sans-serif;
+    color: hsl(var(--foreground));
+    background: hsl(var(--background));
+  }
+  h1, h2, h3 {
+    font-family: 'PP Neue Machina Inktrap', 'PP Neue Machina', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  code, .mono {
+    font-family: ui-monospace, 'JetBrains Mono', SFMono-Regular, Menlo, monospace;
+  }
+  ::selection {
+    background: var(--brotea-violet);
+    color: #fff;
   }
 }

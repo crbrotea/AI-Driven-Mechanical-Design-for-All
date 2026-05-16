@@ -21,7 +21,7 @@ export function Topbar() {
           priority
           className="rounded"
         />
-        <span className="font-semibold">MechDesign AI</span>
+        <span className="font-display text-lg font-extrabold tracking-tight">MechDesign AI</span>
       </div>
       <nav className="flex gap-2">
         <Button
