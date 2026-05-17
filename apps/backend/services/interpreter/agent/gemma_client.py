@@ -6,9 +6,18 @@ touching the real Vertex AI SDK.
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from dataclasses import dataclass
 from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict
+
+
+@dataclass(frozen=True)
+class ImageInput:
+    """One image (decoded bytes + mime) passed to Gemma as visual context."""
+
+    mime_type: str
+    data: bytes
 
 
 class GemmaToolCall(BaseModel):
@@ -41,6 +50,7 @@ class GemmaProtocol(Protocol):
         user_prompt: str,
         tools: list[dict[str, Any]],
         previous_messages: list[dict[str, Any]] | None = None,
+        image: ImageInput | None = None,
     ) -> AsyncIterator[GemmaEvent]:
         ...
 

@@ -9,7 +9,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings.sources.providers.dotenv import DotEnvSettingsSource
 from pydantic_settings.sources.providers.env import EnvSettingsSource
 
-
 _CSV_FIELDS: frozenset[str] = frozenset({"cors_allowed_origins"})
 
 

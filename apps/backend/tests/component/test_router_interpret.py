@@ -27,6 +27,7 @@ class _StubGemma(GemmaProtocol):
         user_prompt: str,
         tools: list[dict[str, Any]],
         previous_messages: list[dict[str, Any]] | None = None,
+        image: object | None = None,
     ) -> AsyncIterator[GemmaEvent]:
         yield GemmaEvent(
             kind="tool_call",

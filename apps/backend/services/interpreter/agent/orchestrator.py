@@ -6,7 +6,11 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
-from services.interpreter.agent.gemma_client import GemmaEvent, GemmaProtocol
+from services.interpreter.agent.gemma_client import (
+    GemmaEvent,
+    GemmaProtocol,
+    ImageInput,
+)
 from services.interpreter.agent.retry_policy import (
     RetryStrategy,
     decide,
@@ -91,6 +95,7 @@ class Orchestrator:
         *,
         user_prompt: str,
         previous_messages: list[dict[str, Any]] | None = None,
+        image: ImageInput | None = None,
     ) -> OrchestratorOutput:
         """Execute the agent loop until a valid final_json is produced.
 
@@ -106,6 +111,7 @@ class Orchestrator:
                     self._corrective_message(last_error) if last_error else None
                 ),
                 previous_messages=previous_messages,
+                image=image,
             )
             events.extend(attempt_events)
             if error is None and final_json is not None:
@@ -138,6 +144,7 @@ class Orchestrator:
         user_prompt: str,
         corrective_context: str | None,
         previous_messages: list[dict[str, Any]] | None = None,
+        image: ImageInput | None = None,
     ) -> tuple[list[GemmaEvent], dict[str, Any] | None, InterpreterError | None]:
         collected: list[GemmaEvent] = []
         system = self._system_prompt
@@ -154,6 +161,7 @@ class Orchestrator:
             user_prompt=user_prompt,
             tools=[],
             previous_messages=previous_messages,
+            image=image,
         ):
             collected.append(ev)
             if ev.kind == "tool_call" and ev.tool_call is not None:

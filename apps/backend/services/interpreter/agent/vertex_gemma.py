@@ -19,6 +19,7 @@ from vertexai.generative_models import (
 from services.interpreter.agent.gemma_client import (
     GemmaEvent,
     GemmaToolCall,
+    ImageInput,
     VertexRateLimited,
     VertexTimeout,
 )
@@ -51,26 +52,35 @@ class VertexGemmaClient:
         user_prompt: str,
         tools: list[dict[str, Any]],
         previous_messages: list[dict[str, Any]] | None = None,
+        image: ImageInput | None = None,
     ) -> AsyncIterator[GemmaEvent]:
         declarations = [FunctionDeclaration(**t) for t in tools]
         vertex_tools = [Tool(function_declarations=declarations)] if declarations else []
 
+        # Build the final user-turn parts. When an image is attached, prepend
+        # it so Gemma processes the visual context before the text prompt.
+        final_parts: list[Any] = []
+        if image is not None:
+            final_parts.append(
+                Part.from_data(mime_type=image.mime_type, data=image.data)
+            )
+        final_parts.append(Part.from_text(user_prompt))
+
         # Build content list: system prompt + history + new user turn.
         # Vertex SDK rejects a list that mixes raw strings with Content
-        # objects, so when previous_messages is non-empty we wrap every item.
-        if previous_messages:
+        # objects, so when previous_messages or an image is present we wrap
+        # every item.
+        if previous_messages or image is not None:
             contents: list[Any] = [
                 Content(role="user", parts=[Part.from_text(system_prompt)])
             ]
-            for msg in previous_messages:
+            for msg in previous_messages or []:
                 role = msg.get("role", "user")
                 text = msg.get("content", "")
                 contents.append(
                     Content(role=role, parts=[Part.from_text(text)])
                 )
-            contents.append(
-                Content(role="user", parts=[Part.from_text(user_prompt)])
-            )
+            contents.append(Content(role="user", parts=final_parts))
         else:
             contents = [system_prompt, user_prompt]
 

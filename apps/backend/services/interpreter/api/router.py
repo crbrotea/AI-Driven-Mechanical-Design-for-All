@@ -1,6 +1,7 @@
 """FastAPI router for the Interpreter endpoints."""
 from __future__ import annotations
 
+import base64
 import json
 import time
 from collections.abc import AsyncIterator
@@ -10,6 +11,7 @@ from typing import Any, Literal
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
+from services.interpreter.agent.gemma_client import ImageInput
 from services.interpreter.agent.orchestrator import Orchestrator
 from services.interpreter.api.dto import (
     InterpretRequest,
@@ -120,11 +122,21 @@ async def interpret(req: InterpretRequest, request: Request) -> StreamingRespons
                 if m.role in ("user", "assistant")
             ]
 
+            image_input: ImageInput | None = None
+            if req.image_b64 and req.image_mime:
+                # DTO validator already confirmed base64 decodes and stays
+                # under the 4 MiB cap, so this is safe.
+                image_input = ImageInput(
+                    mime_type=req.image_mime,
+                    data=base64.b64decode(req.image_b64, validate=True),
+                )
+
             start_time = time.monotonic()
             try:
                 output = await orchestrator.run(
                     user_prompt=req.prompt,
                     previous_messages=previous_messages if previous_messages else None,
+                    image=image_input,
                 )
                 breaker.record_success()
             except InterpreterException as e:

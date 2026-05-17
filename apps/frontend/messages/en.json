@@ -45,6 +45,10 @@
     "placeholder": "Describe your design...",
     "send": "Send",
     "thinking": "Analyzing your design...",
+    "attach_aria": "Attach a sketch or reference photo",
+    "attach_remove": "Remove attachment",
+    "image_too_large": "Image must be under 4 MB",
+    "image_bad_type": "Only PNG, JPEG or WebP images are supported",
     "tool_calls": {
       "list_primitives": "Discovering available primitives",
       "get_primitive_schema": "Analyzing {primitive}",

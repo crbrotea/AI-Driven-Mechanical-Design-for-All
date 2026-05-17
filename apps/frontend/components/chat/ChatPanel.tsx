@@ -2,11 +2,16 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { useInterpretStream } from '@/lib/hooks/useInterpretStream'
+import type { ChatAttachment } from '@/lib/chat-attachment'
 import { ChatMessage } from './ChatMessage'
 import { ChatInput } from './ChatInput'
 import { StreamingIndicator } from './StreamingIndicator'
 
-type HistoryItem = { role: 'user' | 'assistant'; content: string }
+type HistoryItem = {
+  role: 'user' | 'assistant'
+  content: string
+  imageDataUrl?: string
+}
 
 export function ChatPanel({
   sessionId,
@@ -22,10 +27,17 @@ export function ChatPanel({
   const { state, events, intent, start } = useInterpretStream()
   const intentNotifiedRef = useRef(false)
 
-  async function submit(prompt: string) {
+  async function submit(prompt: string, attachment?: ChatAttachment) {
     intentNotifiedRef.current = false
-    setHistory((h) => [...h, { role: 'user', content: prompt }])
-    await start(prompt, sessionId)
+    setHistory((h) => [
+      ...h,
+      { role: 'user', content: prompt, imageDataUrl: attachment?.dataUrl },
+    ])
+    await start(
+      prompt,
+      sessionId,
+      attachment ? { b64: attachment.b64, mime: attachment.mime } : null,
+    )
   }
 
   // When intent arrives, notify parent + add assistant summary
@@ -47,7 +59,22 @@ export function ChatPanel({
           <div className="text-center text-sm text-muted-foreground">{t('placeholder')}</div>
         )}
         {history.map((m, i) => (
-          <ChatMessage key={i} role={m.role} content={m.content} />
+          <div
+            key={i}
+            className={
+              'flex flex-col gap-1 ' +
+              (m.role === 'user' ? 'items-end' : 'items-start')
+            }
+          >
+            {m.imageDataUrl && (
+              <img
+                src={m.imageDataUrl}
+                alt=""
+                className="max-w-[60%] rounded-lg border border-border"
+              />
+            )}
+            <ChatMessage role={m.role} content={m.content} />
+          </div>
         ))}
         {state === 'streaming' && <StreamingIndicator events={events} />}
       </div>

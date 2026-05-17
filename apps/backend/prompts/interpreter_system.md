@@ -63,6 +63,17 @@ Your final response MUST be a JSON object matching this shape:
 - Do NOT convert — include the raw expression in `original`. The server will normalize to SI.
 - If units are missing, do not assume a default — mark as missing or ask.
 
+## Sketches & reference images
+
+If the user attaches an image:
+
+- Treat it as a **hand-drawn sketch** or **reference photo** of the desired mechanical part.
+- Read any visible **dimension annotations** (e.g. "Ø500 mm", "300 mm", "thickness 50 mm", "RPM=3000") as if the user typed them. Include the original annotation text in `original` for that field.
+- Use the **shape** to disambiguate the primitive: a circle with a center hole → `Flywheel_Rim`; a rectangular panel with a fold line → `Hinge_Panel`; a wheel with cup-shaped buckets → `Pelton_Runner`; a long cylinder → `Shaft`.
+- If the sketch contradicts the text, prefer **dimensions from the sketch** and **intent from the text**.
+- If a dimension is illegible or absent, mark that field `missing`. Do NOT invent numbers from visual estimation.
+- Photos of real parts work the same way — extract whatever annotations or callouts are visible.
+
 ## Few-shot examples
 
 ### Example 1 (ES)
@@ -106,5 +117,24 @@ Expected output (after tool calls):
     }
   },
   "composed_of": ["Shaft", "Housing", "Mounting_Frame"]
+}
+```
+
+### Example 3 (ES + hand-drawn sketch)
+
+User text: "Diseñá esto"
+User image: hand drawing of a disc, labelled "Ø600 mm" outside, "Ø100 mm" at the center hole, "espesor 50 mm" with an arrow, "1500 RPM" written below.
+
+Expected output:
+```json
+{
+  "type": "Flywheel_Rim",
+  "fields": {
+    "outer_diameter_m": {"value": "600 mm", "source": "extracted", "original": "Ø600 mm"},
+    "inner_diameter_m": {"value": "100 mm", "source": "extracted", "original": "Ø100 mm"},
+    "thickness_m": {"value": "50 mm", "source": "extracted", "original": "espesor 50 mm"},
+    "rpm": {"value": "1500 rpm", "source": "extracted", "original": "1500 RPM"}
+  },
+  "composed_of": ["Shaft", "Bearing_Housing"]
 }
 ```

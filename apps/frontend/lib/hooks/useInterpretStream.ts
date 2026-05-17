@@ -13,19 +13,24 @@ export function useInterpretStream() {
   const abortRef = useRef<AbortController | null>(null)
 
   const start = useCallback(
-    async (prompt: string, sessionId: string | null) => {
+    async (
+      prompt: string,
+      sessionId: string | null,
+      attachment?: { b64: string; mime: string } | null,
+    ) => {
       setState('streaming')
       setError(null)
       setEvents([])
       setIntent(null)
       const ctrl = new AbortController()
       abortRef.current = ctrl
+      const body: Record<string, unknown> = { prompt, session_id: sessionId }
+      if (attachment) {
+        body.image_b64 = attachment.b64
+        body.image_mime = attachment.mime
+      }
       try {
-        for await (const ev of apiStream(
-          '/interpret',
-          { prompt, session_id: sessionId },
-          ctrl.signal,
-        )) {
+        for await (const ev of apiStream('/interpret', body, ctrl.signal)) {
           setEvents((prev) => [...prev, ev])
           if (ev.event === 'error') {
             setError(ev.data)

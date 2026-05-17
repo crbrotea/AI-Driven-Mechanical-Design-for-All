@@ -45,6 +45,10 @@
     "placeholder": "Describe tu diseño...",
     "send": "Enviar",
     "thinking": "Analizando tu diseño...",
+    "attach_aria": "Adjuntar un boceto o foto de referencia",
+    "attach_remove": "Quitar adjunto",
+    "image_too_large": "La imagen debe pesar menos de 4 MB",
+    "image_bad_type": "Solo se admiten imágenes PNG, JPEG o WebP",
     "tool_calls": {
       "list_primitives": "Descubriendo primitivas disponibles",
       "get_primitive_schema": "Analizando {primitive}",

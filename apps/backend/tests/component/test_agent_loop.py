@@ -40,6 +40,7 @@ class _ScriptedGemma(GemmaProtocol):
         user_prompt: str,
         tools: list[dict],
         previous_messages: list[dict] | None = None,
+        image: object | None = None,
     ) -> AsyncIterator[GemmaEvent]:
         script = self._scripts[self._call]
         self._call += 1

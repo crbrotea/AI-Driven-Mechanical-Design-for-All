@@ -43,6 +43,7 @@ class _SuccessGemma(GemmaProtocol):
         user_prompt: str,
         tools: list[dict[str, Any]],
         previous_messages: list[dict[str, Any]] | None = None,
+        image: object | None = None,
     ) -> AsyncIterator[GemmaEvent]:
         self.received_previous_messages.append(previous_messages)
         yield GemmaEvent(
@@ -68,6 +69,7 @@ class _ErrorGemma(GemmaProtocol):
         user_prompt: str,
         tools: list[dict[str, Any]],
         previous_messages: list[dict[str, Any]] | None = None,
+        image: object | None = None,
     ) -> AsyncIterator[GemmaEvent]:
         raise InterpreterException(
             InterpreterError(
@@ -88,6 +90,7 @@ class _BombGemma(GemmaProtocol):
         user_prompt: str,
         tools: list[dict[str, Any]],
         previous_messages: list[dict[str, Any]] | None = None,
+        image: object | None = None,
     ) -> AsyncIterator[GemmaEvent]:
         raise RuntimeError("unexpected kaboom")
         yield  # make it a generator
