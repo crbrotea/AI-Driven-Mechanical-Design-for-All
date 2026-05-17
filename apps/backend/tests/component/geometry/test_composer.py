@@ -43,7 +43,10 @@ def test_composed_intent_fuses_parts() -> None:
     assert compound.volume >= main.volume * 0.95  # allow minor boolean artifacts
 
 
-def test_missing_composition_rule_raises() -> None:
+def test_missing_composition_rule_is_skipped() -> None:
+    """Unknown composition rules are skipped so the rest of the assembly
+    can still build (e.g. Gemma sometimes proposes companion parts that
+    were never paired with the main primitive)."""
     intent = DesignIntent(
         type="Flywheel_Rim",
         fields={
@@ -54,9 +57,12 @@ def test_missing_composition_rule_raises() -> None:
         },
         composed_of=["Pelton_Runner"],  # no rule for this pair
     )
-    with pytest.raises(GeometryException) as exc:
-        compose_assembly(intent)
-    assert exc.value.error.code == GeometryErrorCode.COMPOSITION_RULE_MISSING
+    compound = compose_assembly(intent)
+    assert compound is not None
+    # Compound.volume can read 0 from build123d's boolean fallback path, so
+    # verify against children: only the main piece should remain.
+    children = list(compound.children) if hasattr(compound, "children") else [compound]
+    assert len(children) == 1
 
 
 def test_unknown_primitive_raises() -> None:

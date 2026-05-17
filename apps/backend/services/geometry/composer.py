@@ -44,13 +44,11 @@ def compose_assembly(intent: DesignIntent) -> Compound:
         key = (intent.type, composed_name)
         rule = COMPOSITION_RULES.get(key)
         if rule is None:
-            GeometryError(
-                code=GeometryErrorCode.COMPOSITION_RULE_MISSING,
-                message=f"No composition rule for {key}",
-                primitive=composed_name,
-                stage="build",
-                details={"main": intent.type, "composed": composed_name},
-            ).raise_as()
+            # The interpreter occasionally proposes companion parts that
+            # have no composition rule (e.g. Hinge_Panel paired with
+            # Mounting_Frame, copied from the Pelton few-shot). Skip them
+            # rather than failing the whole assembly.
+            continue
         composed_fields = rule(main_fields)  # type: ignore[misc]
         composed_builder = get_builder(composed_name)
         try:

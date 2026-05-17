@@ -48,7 +48,9 @@ function DesignPageInner() {
   const [sessionId, setSid] = useState<string | null>(null)
   const [chatIntent, setChatIntent] = useState<DesignIntent | null>(null)
   const { intent: sessionIntent } = useIntent(sessionId)
-  const intent = chatIntent ?? sessionIntent
+  // Prefer the session-backed intent — it reflects every refine call. Fall
+  // back to the chat snapshot only when the session hasn't hydrated yet.
+  const intent = sessionIntent ?? chatIntent
   const [materialName, setMaterialName] = useState<string>('steel_a36')
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null)
   const [narrative, setNarrative] = useState<NaturalReport | null>(null)
