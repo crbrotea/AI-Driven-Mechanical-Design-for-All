@@ -1,5 +1,5 @@
 [{
-  "origin": ["https://ai-driven-mechanical-design-for-all.vercel.app", "http://localhost:3000", "http://localhost:3001"],
+  "origin": ["*"],
   "method": ["GET","HEAD","OPTIONS"],
   "responseHeader": ["Content-Type","Range"],
   "maxAgeSeconds": 3600
